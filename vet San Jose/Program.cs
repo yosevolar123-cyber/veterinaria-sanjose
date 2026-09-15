@@ -99,11 +99,13 @@ app.UseSerilogRequestLogging();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Habilitar Swagger independientemente del entorno (Development o Production)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veterinaria San Jose API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseHttpsRedirection();
 

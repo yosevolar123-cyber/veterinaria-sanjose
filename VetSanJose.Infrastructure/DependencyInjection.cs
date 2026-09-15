@@ -12,6 +12,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Supabase")
+            ?? configuration["ConnectionStrings:Supabase"]
+            ?? Environment.GetEnvironmentVariable("ConnectionStrings__Supabase")
             ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'Supabase'.");
 
         services.AddDbContext<AppDbContext>(options =>
