@@ -18,7 +18,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error no controlado procesando {Path}", context.Request.Path);
+            logger.LogError(
+                ex,
+                "Error no controlado procesando {Method} {Path}. Tipo: {ExceptionType}. Mensaje: {ExceptionMessage}. InnerException: {InnerExceptionMessage}. StackTrace: {StackTrace}",
+                context.Request.Method,
+                context.Request.Path,
+                ex.GetType().FullName,
+                ex.Message,
+                ex.InnerException?.Message,
+                ex.StackTrace);
+
             await EscribirProblemaAsync(context, StatusCodes.Status500InternalServerError,
                 "Ocurrió un error inesperado. Intente nuevamente más tarde.");
         }

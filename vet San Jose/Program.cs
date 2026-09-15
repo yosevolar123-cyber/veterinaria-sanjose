@@ -22,8 +22,45 @@ builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
-    ?? throw new InvalidOperationException("Falta la configuración de Jwt.");
+JwtSettings jwtSettings;
+byte[] jwtSigningKeyBytes;
+try
+{
+    jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
+        ?? throw new InvalidOperationException(
+            $"Falta la sección de configuración '{JwtSettings.SectionName}'. " +
+            "Defina las variables de entorno Jwt__Issuer, Jwt__Audience y Jwt__SigningKey.");
+
+    if (string.IsNullOrWhiteSpace(jwtSettings.Issuer))
+    {
+        throw new InvalidOperationException("Falta la variable de entorno 'Jwt__Issuer'.");
+    }
+
+    if (string.IsNullOrWhiteSpace(jwtSettings.Audience))
+    {
+        throw new InvalidOperationException("Falta la variable de entorno 'Jwt__Audience'.");
+    }
+
+    if (string.IsNullOrWhiteSpace(jwtSettings.SigningKey))
+    {
+        throw new InvalidOperationException("Falta la variable de entorno 'Jwt__SigningKey'.");
+    }
+
+    try
+    {
+        jwtSigningKeyBytes = Convert.FromBase64String(jwtSettings.SigningKey);
+    }
+    catch (FormatException ex)
+    {
+        throw new InvalidOperationException(
+            "La variable de entorno 'Jwt__SigningKey' no contiene un valor Base64 válido.", ex);
+    }
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Error al cargar la configuración de Jwt: {Message}", ex.Message);
+    throw;
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -35,7 +72,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = jwtSettings.Audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtSettings.SigningKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(jwtSigningKeyBytes),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
         };
