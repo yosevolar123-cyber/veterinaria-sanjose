@@ -1,0 +1,135 @@
+@using VetSanJose.Shared.Proveedores
+@inject ProveedoresApiClient ProveedoresApiClient
+
+<div>
+    <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-lg">Proveedores</h3>
+        <button class="btn-primario" @onclick="AbrirCrear">+ Nuevo proveedor</button>
+    </div>
+
+    @if (proveedores.Count == 0)
+    {
+        <p class="py-8 text-center text-gray-400">No hay proveedores registrados.</p>
+    }
+    else
+    {
+        <div class="grid gap-3 sm:grid-cols-2">
+            @foreach (var proveedor in proveedores)
+            {
+                <div class="tarjeta p-4">
+                    <div class="mb-1 flex items-center justify-between">
+                        <p class="font-semibold">@proveedor.Nombre</p>
+                        <span class="rounded-full px-2 py-0.5 text-xs @(proveedor.Activo ? "bg-green-50 text-[var(--color-exito)]" : "bg-red-50 text-[var(--color-error)]")">
+                            @(proveedor.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-400">@proveedor.ContactoNombre</p>
+                    <p class="text-sm text-gray-400">@proveedor.Telefono @proveedor.Email</p>
+                    <button class="mt-2 text-sm text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(proveedor)">Editar</button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<ModalShell @bind-Visible="modalVisible" Titulo="@(editandoId is null ? "Nuevo proveedor" : "Editar proveedor")">
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+    }
+    <div class="space-y-3">
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre de la empresa" @bind="form.Nombre" />
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre de contacto" @bind="form.ContactoNombre" />
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Teléfono" @bind="form.Telefono" />
+        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Correo" @bind="form.Email" />
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Dirección" @bind="form.Direccion" />
+
+        @if (editandoId is not null)
+        {
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" @bind="form.Activo" /> Proveedor activo
+            </label>
+        }
+
+        <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">
+            @(guardando ? "Guardando..." : "Guardar")
+        </button>
+    </div>
+</ModalShell>
+
+@code {
+    private List<ProveedorDto> proveedores = [];
+    private bool modalVisible;
+    private long? editandoId;
+    private bool guardando;
+    private string? error;
+    private FormModel form = new();
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        proveedores = await ProveedoresApiClient.GetAllAsync();
+    }
+
+    private void AbrirCrear()
+    {
+        editandoId = null;
+        form = new FormModel();
+        error = null;
+        modalVisible = true;
+    }
+
+    private void AbrirEditar(ProveedorDto proveedor)
+    {
+        editandoId = proveedor.Id;
+        form = new FormModel
+        {
+            Nombre = proveedor.Nombre,
+            ContactoNombre = proveedor.ContactoNombre,
+            Telefono = proveedor.Telefono,
+            Email = proveedor.Email,
+            Direccion = proveedor.Direccion,
+            Activo = proveedor.Activo,
+        };
+        error = null;
+        modalVisible = true;
+    }
+
+    private async Task GuardarAsync()
+    {
+        error = null;
+        guardando = true;
+        try
+        {
+            var response = editandoId is null
+                ? await ProveedoresApiClient.CrearAsync(new CrearProveedorRequest(
+                    form.Nombre, form.ContactoNombre, form.Telefono, form.Email, form.Direccion))
+                : await ProveedoresApiClient.ActualizarAsync(editandoId.Value, new ActualizarProveedorRequest(
+                    form.Nombre, form.ContactoNombre, form.Telefono, form.Email, form.Direccion, form.Activo));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                error = await response.LeerMensajeAsync();
+                return;
+            }
+
+            modalVisible = false;
+            await CargarAsync();
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private class FormModel
+    {
+        public string Nombre { get; set; } = "";
+        public string? ContactoNombre { get; set; }
+        public string? Telefono { get; set; }
+        public string? Email { get; set; }
+        public string? Direccion { get; set; }
+        public bool Activo { get; set; } = true;
+    }
+}

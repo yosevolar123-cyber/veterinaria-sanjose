@@ -1,0 +1,144 @@
+@using VetSanJose.Shared.Citas
+@using VetSanJose.Shared.Usuarios
+@using VetSanJose.Domain.Common
+@inject CitasApiClient CitasApiClient
+@inject UsuariosApiClient UsuariosApiClient
+
+<div>
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="fecha" @bind:after="CargarAsync" />
+
+            @if (MostrarFiltroDoctor)
+            {
+                <select class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="doctorFiltro" @bind:after="CargarAsync">
+                    <option value="0">Todos los doctores</option>
+                    @foreach (var doctor in doctores)
+                    {
+                        <option value="@doctor.Id">@doctor.Nombre @doctor.Apellido</option>
+                    }
+                </select>
+            }
+        </div>
+
+        @if (PermitirCrear)
+        {
+            <button class="btn-primario" @onclick="() => modalVisible = true">+ Nueva cita</button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+    }
+
+    @if (cargando)
+    {
+        <div class="space-y-3">
+            @for (var i = 0; i < 3; i++)
+            {
+                <div class="skeleton h-20"></div>
+            }
+        </div>
+    }
+    else if (citas.Count == 0)
+    {
+        <p class="py-10 text-center text-gray-400">¡Aún no hay citas para este día! 🐾</p>
+    }
+    else
+    {
+        <div class="space-y-3">
+            @foreach (var cita in citas)
+            {
+                <div class="tarjeta flex flex-wrap items-center justify-between gap-3 p-4">
+                    <div>
+                        <p class="font-semibold">@cita.MascotaNombre <span class="font-normal text-gray-400">· @cita.ClienteNombre</span></p>
+                        <p class="text-sm text-gray-500">🩺 @cita.DoctorNombre · @cita.FechaHora.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</p>
+                        @if (!string.IsNullOrWhiteSpace(cita.Motivo))
+                        {
+                            <p class="text-sm text-gray-400">@cita.Motivo</p>
+                        }
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="rounded-full px-3 py-1 text-xs font-semibold @EstadoClase(cita.Estado)">@cita.Estado</span>
+                        @if (PermitirGestionar)
+                        {
+                            <select class="rounded-full border border-[var(--color-gris-borde)] px-2 py-1 text-xs" value="@cita.Estado"
+                                    @onchange="e => CambiarEstadoAsync(cita, e.Value?.ToString() ?? cita.Estado)">
+                                <option value="@EstadosCita.Pendiente">pendiente</option>
+                                <option value="@EstadosCita.Confirmada">confirmada</option>
+                                <option value="@EstadosCita.Completada">completada</option>
+                                <option value="@EstadosCita.Cancelada">cancelada</option>
+                            </select>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<NuevaCitaModal @bind-Visible="modalVisible" MostrarSelectorDoctor="MostrarFiltroDoctor" DoctorFijoId="DoctorFijoId" OnCitaCreada="CargarAsync" />
+
+@code {
+    [Parameter] public bool MostrarFiltroDoctor { get; set; }
+    [Parameter] public bool PermitirCrear { get; set; }
+    [Parameter] public bool PermitirGestionar { get; set; }
+    [Parameter] public long? DoctorFijoId { get; set; }
+
+    private List<CitaDto> citas = [];
+    private List<UsuarioAdminDto> doctores = [];
+    private DateOnly fecha = DateOnly.FromDateTime(DateTime.Now);
+    private long doctorFiltro;
+    private bool cargando = true;
+    private bool modalVisible;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MostrarFiltroDoctor)
+        {
+            try
+            {
+                doctores = await UsuariosApiClient.GetAllAsync("doctor");
+            }
+            catch (HttpRequestException ex)
+            {
+                error = $"No se pudo cargar la lista de doctores: {ex.Message}";
+            }
+        }
+
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        try
+        {
+            citas = await CitasApiClient.GetAgendaAsync(doctorFiltro > 0 ? doctorFiltro : DoctorFijoId, fecha);
+        }
+        catch (HttpRequestException)
+        {
+            citas = [];
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CambiarEstadoAsync(CitaDto cita, string nuevoEstado)
+    {
+        await CitasApiClient.ActualizarAsync(cita.Id, new ActualizarCitaRequest(cita.FechaHora, cita.Motivo, nuevoEstado));
+        await CargarAsync();
+    }
+
+    private static string EstadoClase(string estado) => estado switch
+    {
+        EstadosCita.Confirmada => "bg-blue-50 text-blue-600",
+        EstadosCita.Completada => "bg-green-50 text-[var(--color-exito)]",
+        EstadosCita.Cancelada => "bg-red-50 text-[var(--color-error)]",
+        _ => "bg-[var(--color-celeste-suave)] text-[var(--color-celeste-intenso)]",
+    };
+}

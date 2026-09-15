@@ -1,0 +1,172 @@
+@page "/tienda"
+@inject ProductosApiClient ProductosApiClient
+@inject CategoriasApiClient CategoriasApiClient
+@inject CartService Cart
+
+<PageTitle>Tienda — Veterinaria San José</PageTitle>
+
+<section class="relative flex h-64 items-end overflow-hidden sm:h-80">
+    <img src="https://images.unsplash.com/photo-1591946559594-8c6d3b7391eb?auto=format&fit=crop&w=1600&q=75"
+         alt="Productos para mascotas" class="absolute inset-0 h-full w-full object-cover" />
+    <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-celeste-intenso)]/90 to-[var(--color-celeste-intenso)]/20"></div>
+    <div class="relative mx-auto w-full max-w-6xl px-4 pb-8 sm:px-6">
+        <h1 class="fade-in-up text-4xl font-bold text-white">Nuestra tienda 🛍️</h1>
+        <p class="fade-in-up mt-2 max-w-md text-white/90" style="animation-delay:100ms">
+            Alimentos, medicamentos y accesorios pensados para el bienestar de tu mascota.
+        </p>
+    </div>
+</section>
+
+<div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div class="mb-8 flex justify-end">
+        <button class="btn-secundario" @onclick="() => carritoAbierto = true">
+            🛒 Carrito (@Cart.CantidadTotal)
+        </button>
+    </div>
+
+    <div class="mb-8 flex flex-wrap gap-2">
+        <button class="rounded-full px-4 py-1.5 text-sm @(categoriaSeleccionada is null ? "bg-[var(--color-celeste)] text-white" : "bg-[var(--color-celeste-suave)] text-[var(--color-celeste-intenso)]")"
+                @onclick="() => FiltrarPorCategoriaAsync(null)">
+            Todas
+        </button>
+        @foreach (var categoria in categorias)
+        {
+            <button class="rounded-full px-4 py-1.5 text-sm @(categoriaSeleccionada == categoria.Id ? "bg-[var(--color-celeste)] text-white" : "bg-[var(--color-celeste-suave)] text-[var(--color-celeste-intenso)]")"
+                    @onclick="() => FiltrarPorCategoriaAsync(categoria.Id)">
+                @categoria.Nombre
+            </button>
+        }
+    </div>
+
+    @if (cargando)
+    {
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @for (var i = 0; i < 6; i++)
+            {
+                <div class="skeleton h-64"></div>
+            }
+        </div>
+    }
+    else if (error is not null)
+    {
+        <p class="py-12 text-center text-[var(--color-error)]">@error</p>
+    }
+    else if (productos.Count == 0)
+    {
+        <p class="py-12 text-center text-gray-400">Aún no hay productos disponibles en esta categoría 🐾</p>
+    }
+    else
+    {
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var (producto, indice) in productos.Select((p, i) => (p, i)))
+            {
+                <div class="tarjeta-producto overflow-hidden" data-aos="fade-up" data-aos-delay="@(indice % 6 * 80)">
+                    <div class="h-44 overflow-hidden bg-[var(--color-celeste-suave)]">
+                        <img src="@(string.IsNullOrWhiteSpace(producto.ImagenUrl) ? ImagenPorDefecto : producto.ImagenUrl)"
+                             alt="@producto.Nombre" class="h-full w-full object-cover" loading="lazy" />
+                    </div>
+                    <div class="p-4">
+                        <h3 class="mb-1 text-base">@producto.Nombre</h3>
+                        <p class="mb-3 text-sm text-gray-500 line-clamp-2">@producto.Descripcion</p>
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-[var(--color-celeste-intenso)]">@FormatoBs(producto.Precio)</span>
+                            <button class="btn-primario !px-4 !py-2 text-sm" @onclick="() => Cart.Agregar(producto)">
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (carritoAbierto)
+{
+    <div class="fixed inset-0 z-50 flex justify-end bg-slate-900/40" @onclick="() => carritoAbierto = false">
+        <div class="h-full w-full max-w-sm bg-white p-6 shadow-xl" @onclick:stopPropagation="true">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-xl">Tu carrito</h2>
+                <button class="text-gray-400 hover:text-gray-600" @onclick="() => carritoAbierto = false">✕</button>
+            </div>
+
+            @if (Cart.Items.Count == 0)
+            {
+                <p class="text-gray-400">Tu carrito está vacío 🐾</p>
+            }
+            else
+            {
+                <div class="space-y-3">
+                    @foreach (var item in Cart.Items)
+                    {
+                        <div class="flex items-center justify-between border-b border-[var(--color-gris-borde)] pb-2">
+                            <div>
+                                <p class="text-sm font-medium">@item.Nombre</p>
+                                <p class="text-xs text-gray-400">@item.Cantidad x @FormatoBs(item.Precio)</p>
+                            </div>
+                            <button class="text-xs text-[var(--color-error)]" @onclick="() => Cart.Quitar(item.ProductoId)">Quitar</button>
+                        </div>
+                    }
+                </div>
+                <div class="mt-6 flex items-center justify-between font-semibold">
+                    <span>Total</span>
+                    <span>@FormatoBs(Cart.Total)</span>
+                </div>
+                <a href="/checkout" class="btn-primario mt-4 block text-center">Ir a pagar</a>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<VetSanJose.Shared.Productos.ProductoTiendaDto> productos = [];
+    private List<VetSanJose.Shared.Categorias.CategoriaProductoDto> categorias = [];
+    private long? categoriaSeleccionada;
+    private bool cargando = true;
+    private bool carritoAbierto;
+
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            categorias = await CategoriasApiClient.GetAllAsync();
+        }
+        catch (HttpRequestException)
+        {
+            categorias = [];
+        }
+
+        await CargarProductosAsync();
+    }
+
+    private async Task FiltrarPorCategoriaAsync(long? categoriaId)
+    {
+        categoriaSeleccionada = categoriaId;
+        await CargarProductosAsync();
+    }
+
+    private async Task CargarProductosAsync()
+    {
+        cargando = true;
+        error = null;
+        try
+        {
+            productos = await ProductosApiClient.GetTiendaAsync(categoriaSeleccionada);
+        }
+        catch (HttpRequestException)
+        {
+            productos = [];
+            error = "No se pudo conectar con la tienda en este momento. Intenta de nuevo más tarde.";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private const string ImagenPorDefecto = "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?auto=format&fit=crop&w=600&q=70";
+
+    private static string FormatoBs(decimal valor) => $"Bs {valor:N2}";
+}

@@ -1,0 +1,22 @@
+@if (Visible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4" @onclick="Cerrar">
+        <div class="tarjeta w-full @AnchoClase p-6" @onclick:stopPropagation="true">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-xl">@Titulo</h2>
+                <button class="text-gray-400 hover:text-gray-600" @onclick="Cerrar">✕</button>
+            </div>
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Titulo { get; set; } = "";
+    [Parameter] public string AnchoClase { get; set; } = "max-w-md";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private Task Cerrar() => VisibleChanged.InvokeAsync(false);
+}

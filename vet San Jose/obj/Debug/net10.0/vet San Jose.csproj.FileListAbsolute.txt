@@ -1,0 +1,71 @@
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.csproj.AssemblyReference.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.AssemblyInfoInputs.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.AssemblyInfo.cs
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.csproj.CoreCompileInputs.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\appsettings.Development.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\appsettings.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\vet San Jose.staticwebassets.endpoints.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\vet San Jose.exe
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\vet San Jose.deps.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\vet San Jose.runtimeconfig.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\vet San Jose.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\vet San Jose.pdb
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\BCrypt-Net-Next.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\FluentValidation.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\FluentValidation.DependencyInjectionExtensions.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Microsoft.OpenApi.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Npgsql.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.AspNetCore.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Extensions.Hosting.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Extensions.Logging.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Formatting.Compact.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Settings.Configuration.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Sinks.Console.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Sinks.Debug.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Serilog.Sinks.File.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Application.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Domain.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Infrastructure.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Domain.pdb
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Application.pdb
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Infrastructure.pdb
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\rjimswa.dswa.cache.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\scopedcss\bundle\vet San Jose.styles.css
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\staticwebassets.build.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\staticwebassets.build.json.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\staticwebassets.development.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\swae.build.ex.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San .10F9E7AF.Up2Date
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\refint\vet San Jose.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.pdb
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\vet San Jose.genruntimeconfig.cache
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\obj\Debug\net10.0\ref\vet San Jose.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Shared.dll
+C:\Users\luis\Desktop\proyecto vete\vet San Jose\vet San Jose\bin\Debug\net10.0\VetSanJose.Shared.pdb

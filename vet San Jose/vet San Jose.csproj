@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>vet_San_Jose</RootNamespace>
+    <UserSecretsId>ecc7518d-9184-4ec4-8c32-7e19de1d05aa</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VetSanJose.Domain\VetSanJose.Domain.csproj" />
+    <ProjectReference Include="..\VetSanJose.Application\VetSanJose.Application.csproj" />
+    <ProjectReference Include="..\VetSanJose.Infrastructure\VetSanJose.Infrastructure.csproj" />
+    <ProjectReference Include="..\VetSanJose.Shared\VetSanJose.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

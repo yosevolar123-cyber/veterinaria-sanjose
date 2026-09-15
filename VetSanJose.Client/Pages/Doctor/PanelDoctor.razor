@@ -1,0 +1,214 @@
+@page "/panel-doctor"
+@attribute [Authorize(Roles = Roles.Doctor)]
+@using VetSanJose.Shared.Usuarios
+@using VetSanJose.Shared.Mascotas
+@using VetSanJose.Shared.Productos
+@using VetSanJose.Shared.Proveedores
+@inject UsuariosApiClient UsuariosApiClient
+@inject MascotasApiClient MascotasApiClient
+@inject ProductosApiClient ProductosApiClient
+@inject ProveedoresApiClient ProveedoresApiClient
+@inject DashboardApiClient DashboardApiClient
+
+<PageTitle>Panel Doctor — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <h1 class="mb-8 text-3xl">Panel del doctor 🩺</h1>
+
+    @if (resumen is not null)
+    {
+        <div class="mb-10 grid gap-4 sm:grid-cols-3">
+            <div data-aos="fade-up">
+                <StatCard Icono="📅" Valor="@resumen.CitasHoy.ToString()" Etiqueta="Citas hoy" />
+            </div>
+            <div data-aos="fade-up" data-aos-delay="80">
+                <StatCard Icono="⏰" Valor="@(resumen.ProximaCita?.LocalDateTime.ToString("dd/MM HH:mm") ?? "Sin citas")" Etiqueta="Próxima cita"
+                          FondoIcono="bg-blue-50" ColorValor="text-slate-700 text-base" />
+            </div>
+            <div data-aos="fade-up" data-aos-delay="160">
+                <StatCard Icono="⚠️" Valor="@resumen.ProductosStockBajo.ToString()" Etiqueta="Productos con stock bajo"
+                          FondoIcono="bg-amber-50" ColorValor="text-[var(--color-advertencia)]" />
+            </div>
+        </div>
+    }
+
+    <div class="mb-8 flex gap-2 rounded-full bg-[var(--color-celeste-suave)] p-1 sm:w-fit">
+        @foreach (var t in new[] { Tab.Agenda, Tab.Historial, Tab.Stock })
+        {
+            <button class="rounded-full px-4 py-2 text-sm font-semibold transition-colors @(tab == t ? "bg-white shadow text-[var(--color-celeste-intenso)]" : "text-gray-500")"
+                    @onclick="() => tab = t">
+                @TituloTab(t)
+            </button>
+        }
+    </div>
+
+    <div class="route-fade" @key="tab">
+        @if (tab == Tab.Agenda)
+        {
+            <AgendaView MostrarFiltroDoctor="false" PermitirCrear="true" PermitirGestionar="true" />
+        }
+        else if (tab == Tab.Historial)
+        {
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+            }
+
+            <div class="tarjeta mb-6 grid gap-3 p-6 sm:grid-cols-2">
+                <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="clienteSeleccionado" @bind:after="CargarMascotasAsync">
+                    <option value="0">Selecciona un cliente</option>
+                    @foreach (var cliente in clientes)
+                    {
+                        <option value="@cliente.Id">@cliente.Nombre @cliente.Apellido</option>
+                    }
+                </select>
+
+                <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="mascotaSeleccionada">
+                    <option value="0">Selecciona una mascota</option>
+                    @foreach (var mascota in mascotas)
+                    {
+                        <option value="@mascota.Id">@mascota.Nombre (@mascota.Especie)</option>
+                    }
+                </select>
+            </div>
+
+            @if (mascotaSeleccionada > 0)
+            {
+                <HistorialMedicoForm @key="mascotaSeleccionada" MascotaId="mascotaSeleccionada" />
+            }
+            else
+            {
+                <p class="py-8 text-center text-gray-400">Selecciona un cliente y una mascota para registrar el historial.</p>
+            }
+        }
+        else if (tab == Tab.Stock)
+        {
+            @if (cargandoStock)
+            {
+                <div class="skeleton h-40"></div>
+            }
+            else if (productosStockBajo.Count == 0)
+            {
+                <p class="py-8 text-center text-gray-400">¡Todo el stock está en buen nivel! 🐾</p>
+            }
+            else
+            {
+                <div class="grid gap-4 sm:grid-cols-2">
+                    @foreach (var (producto, indice) in productosStockBajo.Select((p, i) => (p, i)))
+                    {
+                        <div class="tarjeta p-5" data-aos="fade-up" data-aos-delay="@(indice * 80)">
+                            <div class="mb-1 flex items-center justify-between">
+                                <p class="font-semibold">@producto.Nombre</p>
+                                <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-[var(--color-error)]">Stock: @producto.Stock</span>
+                            </div>
+                            @if (producto.ProveedorId is not null && proveedores.TryGetValue(producto.ProveedorId.Value, out var proveedor))
+                            {
+                                <div class="mt-2 rounded-xl bg-[var(--color-celeste-suave)] p-3 text-sm">
+                                    <p class="font-semibold">Proveedor: @proveedor.Nombre</p>
+                                    @if (!string.IsNullOrWhiteSpace(proveedor.Telefono))
+                                    {
+                                        <p>📞 @proveedor.Telefono</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(proveedor.Email))
+                                    {
+                                        <p>✉️ @proveedor.Email</p>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="mt-2 text-sm text-gray-400">Sin proveedor asignado.</p>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private enum Tab { Agenda, Historial, Stock }
+
+    private Tab tab = Tab.Agenda;
+
+    private VetSanJose.Shared.Dashboard.DoctorDashboardDto? resumen;
+
+    private List<UsuarioAdminDto> clientes = [];
+    private List<MascotaDto> mascotas = [];
+    private long clienteSeleccionado;
+    private long mascotaSeleccionada;
+    private string? error;
+
+    private List<ProductoDto> productosStockBajo = [];
+    private Dictionary<long, ProveedorDto> proveedores = [];
+    private bool cargandoStock = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            resumen = await DashboardApiClient.GetDoctorAsync();
+        }
+        catch (HttpRequestException) { }
+
+        try
+        {
+            clientes = await UsuariosApiClient.GetAllAsync("cliente");
+        }
+        catch (HttpRequestException ex)
+        {
+            error = $"No se pudo cargar la lista de clientes: {ex.Message}";
+        }
+
+        await CargarStockAsync();
+    }
+
+    private async Task CargarMascotasAsync()
+    {
+        mascotaSeleccionada = 0;
+        try
+        {
+            mascotas = clienteSeleccionado > 0 ? await MascotasApiClient.GetPorClienteAsync(clienteSeleccionado) : [];
+        }
+        catch (HttpRequestException ex)
+        {
+            mascotas = [];
+            error = $"No se pudo cargar las mascotas: {ex.Message}";
+        }
+    }
+
+    private async Task CargarStockAsync()
+    {
+        cargandoStock = true;
+        try
+        {
+            productosStockBajo = await ProductosApiClient.GetStockBajoAsync();
+            var proveedorIds = productosStockBajo.Where(p => p.ProveedorId.HasValue).Select(p => p.ProveedorId!.Value).Distinct();
+            foreach (var id in proveedorIds)
+            {
+                var proveedor = await ProveedoresApiClient.GetByIdAsync(id);
+                if (proveedor is not null)
+                {
+                    proveedores[id] = proveedor;
+                }
+            }
+        }
+        catch (HttpRequestException)
+        {
+            productosStockBajo = [];
+        }
+        finally
+        {
+            cargandoStock = false;
+        }
+    }
+
+    private static string TituloTab(Tab t) => t switch
+    {
+        Tab.Agenda => "Agenda",
+        Tab.Historial => "Registrar historial",
+        Tab.Stock => "Stock e insumos",
+        _ => "",
+    };
+}

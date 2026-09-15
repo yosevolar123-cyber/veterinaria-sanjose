@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="vet San Jose/vet San Jose.csproj" />
+  <Project Path="VetSanJose.Application/VetSanJose.Application.csproj" />
+  <Project Path="VetSanJose.Client/VetSanJose.Client.csproj" />
+  <Project Path="VetSanJose.Domain/VetSanJose.Domain.csproj" />
+  <Project Path="VetSanJose.Infrastructure/VetSanJose.Infrastructure.csproj" />
+  <Project Path="VetSanJose.Shared/VetSanJose.Shared.csproj" />
+</Solution>

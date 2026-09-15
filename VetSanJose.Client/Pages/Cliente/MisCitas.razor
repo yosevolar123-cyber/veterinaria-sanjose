@@ -1,0 +1,62 @@
+@page "/mi-cuenta/citas"
+@attribute [Authorize(Roles = Roles.Cliente)]
+@using VetSanJose.Shared.Citas
+@inject CitasApiClient CitasApiClient
+
+<PageTitle>Mis citas — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <h1 class="mb-6 text-3xl">Mis citas 📅</h1>
+
+    @if (cargando)
+    {
+        <div class="space-y-3">
+            @for (var i = 0; i < 3; i++)
+            {
+                <div class="skeleton h-20"></div>
+            }
+        </div>
+    }
+    else if (citas.Count == 0)
+    {
+        <p class="py-10 text-center text-gray-400">¡Aún no tienes citas registradas! 🐾</p>
+    }
+    else
+    {
+        <div class="space-y-3">
+            @foreach (var cita in citas.OrderByDescending(c => c.FechaHora))
+            {
+                <div class="tarjeta flex items-center justify-between p-4">
+                    <div>
+                        <p class="font-semibold">@cita.MascotaNombre</p>
+                        <p class="text-sm text-gray-500">🩺 @cita.DoctorNombre · @cita.FechaHora.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <span class="rounded-full bg-[var(--color-celeste-suave)] px-3 py-1 text-xs font-semibold text-[var(--color-celeste-intenso)]">
+                        @cita.Estado
+                    </span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<CitaDto> citas = [];
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            citas = await CitasApiClient.GetMisCitasAsync();
+        }
+        catch (HttpRequestException)
+        {
+            citas = [];
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

@@ -1,0 +1,106 @@
+@using VetSanJose.Shared.Categorias
+@inject CategoriasApiClient CategoriasApiClient
+
+<div>
+    <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-lg">Categorías de productos</h3>
+        <button class="btn-primario" @onclick="AbrirCrear">+ Nueva categoría</button>
+    </div>
+
+    @if (categorias.Count == 0)
+    {
+        <p class="py-8 text-center text-gray-400">No hay categorías registradas.</p>
+    }
+    else
+    {
+        <div class="grid gap-3 sm:grid-cols-2">
+            @foreach (var categoria in categorias)
+            {
+                <div class="tarjeta flex items-center justify-between p-4">
+                    <div>
+                        <p class="font-semibold">@categoria.Nombre</p>
+                        @if (!string.IsNullOrWhiteSpace(categoria.Descripcion))
+                        {
+                            <p class="text-sm text-gray-400">@categoria.Descripcion</p>
+                        }
+                    </div>
+                    <button class="text-sm text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(categoria)">Editar</button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<ModalShell @bind-Visible="modalVisible" Titulo="@(editandoId is null ? "Nueva categoría" : "Editar categoría")">
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+    }
+    <div class="space-y-3">
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="nombre" />
+        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Descripción (opcional)" @bind="descripcion"></textarea>
+        <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">
+            @(guardando ? "Guardando..." : "Guardar")
+        </button>
+    </div>
+</ModalShell>
+
+@code {
+    private List<CategoriaProductoDto> categorias = [];
+    private bool modalVisible;
+    private long? editandoId;
+    private bool guardando;
+    private string? error;
+    private string nombre = "";
+    private string? descripcion;
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        categorias = await CategoriasApiClient.GetAllAsync();
+    }
+
+    private void AbrirCrear()
+    {
+        editandoId = null;
+        nombre = "";
+        descripcion = null;
+        error = null;
+        modalVisible = true;
+    }
+
+    private void AbrirEditar(CategoriaProductoDto categoria)
+    {
+        editandoId = categoria.Id;
+        nombre = categoria.Nombre;
+        descripcion = categoria.Descripcion;
+        error = null;
+        modalVisible = true;
+    }
+
+    private async Task GuardarAsync()
+    {
+        error = null;
+        guardando = true;
+        try
+        {
+            var response = editandoId is null
+                ? await CategoriasApiClient.CrearAsync(new CrearCategoriaRequest(nombre, descripcion))
+                : await CategoriasApiClient.ActualizarAsync(editandoId.Value, new ActualizarCategoriaRequest(nombre, descripcion));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                error = await response.LeerMensajeAsync();
+                return;
+            }
+
+            modalVisible = false;
+            await CargarAsync();
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

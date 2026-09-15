@@ -1,0 +1,176 @@
+@page "/"
+
+<PageTitle>Veterinaria San José</PageTitle>
+
+<!-- HERO -->
+<section class="relative flex min-h-[88vh] items-center overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1770836037793-95bdbf190f71?auto=format&fit=crop&w=1920&q=80"
+         alt="Veterinario examinando a un perro con cariño"
+         class="absolute inset-0 h-full w-full object-cover" />
+    <div class="absolute inset-0 bg-gradient-to-r from-[var(--color-celeste-intenso)]/90 via-[var(--color-celeste-intenso)]/60 to-transparent"></div>
+
+    <div class="relative mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-24 sm:px-6">
+        <h1 class="fade-in-up max-w-2xl text-4xl font-bold leading-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl" style="animation-delay:0ms">
+            Cuidamos a tu mejor amigo como parte de la familia 🐾
+        </h1>
+        <p class="fade-in-up max-w-lg text-lg text-white/90" style="animation-delay:120ms">
+            Atención veterinaria integral, tienda de productos y seguimiento del historial médico de tus mascotas, todo en un solo lugar.
+        </p>
+        <div class="fade-in-up flex flex-wrap gap-4" style="animation-delay:240ms">
+            <a href="/tienda" class="btn-primario">Visitar la tienda</a>
+            <a href="/contacto" class="btn-secundario !border-white !text-white hover:!bg-white/10">Agendar una cita</a>
+        </div>
+    </div>
+</section>
+
+<!-- QUÉ PODÉS ESPERAR -->
+<section class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+    <h2 class="mb-14 text-center text-3xl" data-aos="fade-up">Qué podés esperar de nosotros</h2>
+
+    <div class="space-y-16">
+        @foreach (var (bloque, indice) in bloques.Select((b, i) => (b, i)))
+        {
+            <div class="grid items-center gap-8 md:grid-cols-2" data-aos="fade-up">
+                <div class="@(indice % 2 == 1 ? "md:order-2" : "")">
+                    <img src="@bloque.Imagen" alt="@bloque.Titulo" class="h-72 w-full rounded-[var(--radius-card)] object-cover shadow-lg" loading="lazy" />
+                </div>
+                <div class="@(indice % 2 == 1 ? "md:order-1" : "")">
+                    <span class="mb-2 inline-block rounded-full bg-[var(--color-celeste-suave)] px-3 py-1 text-xs font-semibold text-[var(--color-celeste-intenso)]">
+                        0@(indice + 1)
+                    </span>
+                    <h3 class="mb-3 text-2xl">@bloque.Titulo</h3>
+                    <p class="text-gray-500">@bloque.Descripcion</p>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="bg-[var(--color-celeste-suave)]/40 py-20">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 class="mb-12 text-center text-3xl" data-aos="fade-up">Nuestros servicios</h2>
+        <div class="grid gap-6 sm:grid-cols-3">
+            @foreach (var (servicio, indice) in servicios.Select((s, i) => (s, i)))
+            {
+                <div class="tarjeta-producto overflow-hidden" data-aos="fade-up" data-aos-delay="@(indice * 100)">
+                    <img src="@servicio.Imagen" alt="@servicio.Titulo" class="h-44 w-full object-cover" loading="lazy" />
+                    <div class="p-6">
+                        <h3 class="mb-2 text-lg">@servicio.Titulo</h3>
+                        <p class="mb-4 text-sm text-gray-500">@servicio.Descripcion</p>
+                        <a href="/contacto" class="text-sm font-semibold text-[var(--color-celeste-intenso)] hover:underline">Conocer más →</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- PRUEBA SOCIAL -->
+<section class="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+    <div class="mb-12 text-center" data-aos="fade-up">
+        <div class="mb-2 flex justify-center gap-1 text-2xl text-[var(--color-advertencia)]">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <h2 class="text-3xl">Familias felices, mascotas sanas</h2>
+        <p class="text-gray-500">Basado en reseñas de nuestros clientes</p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-3">
+        @foreach (var (testimonio, indice) in testimonios.Select((t, i) => (t, i)))
+        {
+            <div class="tarjeta p-6" data-aos="fade-up" data-aos-delay="@(indice * 100)">
+                <div class="mb-3 flex items-center gap-3">
+                    <img src="@testimonio.Foto" alt="@testimonio.Nombre" class="h-12 w-12 rounded-full object-cover" loading="lazy" />
+                    <div>
+                        <p class="font-semibold">@testimonio.Nombre</p>
+                        <p class="text-xs text-gray-400">Dueño/a de @testimonio.Mascota</p>
+                    </div>
+                </div>
+                <div class="mb-2 text-sm text-[var(--color-advertencia)]">★★★★★</div>
+                <p class="text-sm text-gray-500">"@testimonio.Comentario"</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- UBICACIÓN Y CONTACTO -->
+<section class="bg-[var(--color-celeste-suave)]/40 py-20">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 class="mb-12 text-center text-3xl" data-aos="fade-up">Visítanos</h2>
+        <div class="grid gap-8 md:grid-cols-2">
+            <div data-aos="fade-up">
+                <iframe
+                    title="Ubicación de la clínica"
+                    class="h-80 w-full rounded-[var(--radius-card)] shadow-lg"
+                    style="border:0"
+                    loading="lazy"
+                    src="https://www.google.com/maps?q=Av.+Principal+123,+Santa+Cruz,+Bolivia&output=embed">
+                </iframe>
+            </div>
+            <div class="flex flex-col justify-center gap-4" data-aos="fade-up" data-aos-delay="100">
+                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=75"
+                     alt="Recepción de la clínica" class="h-48 w-full rounded-[var(--radius-card)] object-cover shadow-md" loading="lazy" />
+                <ul class="space-y-2 text-gray-600">
+                    <li>📍 Av. Principal 123, Zona Central, Santa Cruz</li>
+                    <li>📞 +591 700 00000</li>
+                    <li>💬 WhatsApp: +591 700 00000</li>
+                    <li>🕐 Lunes a viernes 8:00–19:00 · Sábados 9:00–14:00</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="bg-[var(--color-celeste)] py-16 text-center text-white" data-aos="fade-up">
+    <div class="mx-auto max-w-2xl px-4 sm:px-6">
+        <h2 class="mb-4 text-3xl">Agendá la primera consulta de tu mascota</h2>
+        <p class="mb-8 text-white/90">Nuestro equipo está listo para recibirlos con el cuidado que se merecen.</p>
+        <a href="/contacto" class="inline-flex items-center justify-center rounded-full bg-white px-8 py-3 font-semibold text-[var(--color-celeste-intenso)] shadow-md transition hover:shadow-lg active:scale-95">
+            Agendar ahora
+        </a>
+    </div>
+</section>
+
+@code {
+    private record Bloque(string Titulo, string Descripcion, string Imagen);
+    private record Servicio(string Titulo, string Descripcion, string Imagen);
+    private record Testimonio(string Nombre, string Mascota, string Comentario, string Foto);
+
+    private readonly List<Bloque> bloques =
+    [
+        new("Agendar citas fácil",
+            "Reserva tu consulta en minutos y elige el horario que mejor se acomode a tu rutina.",
+            "https://images.unsplash.com/photo-1629909614456-6b1c5c94cecc?auto=format&fit=crop&w=900&q=75"),
+        new("Un equipo que escucha",
+            "Nuestros veterinarios dedican el tiempo necesario para entender a tu mascota y resolver tus dudas.",
+            "https://images.unsplash.com/photo-1644675272883-0c4d582528d8?auto=format&fit=crop&w=900&q=75"),
+        new("Precios claros",
+            "Sin sorpresas: conocés el costo del tratamiento antes de confirmarlo.",
+            "https://images.unsplash.com/photo-1719903568346-8d7df83b7dd6?auto=format&fit=crop&w=900&q=75"),
+        new("Seguimiento post-consulta",
+            "Te acompañamos después de cada visita para asegurarnos de que la recuperación va por buen camino.",
+            "https://images.unsplash.com/photo-1557495235-340eb888a9fb?auto=format&fit=crop&w=900&q=75"),
+    ];
+
+    private readonly List<Servicio> servicios =
+    [
+        new("Consultas médicas", "Diagnóstico y tratamiento por veterinarios especializados.",
+            "https://images.unsplash.com/photo-1770836037816-4445dbd449fd?auto=format&fit=crop&w=800&q=75"),
+        new("Vacunación", "Esquemas de vacunación completos para perros y gatos.",
+            "https://images.unsplash.com/photo-1770836037275-38b44e4b101f?auto=format&fit=crop&w=800&q=75"),
+        new("Tienda", "Alimentos, medicamentos y accesorios para tu mascota.",
+            "https://images.unsplash.com/photo-1714068691210-073dc52c6c1d?auto=format&fit=crop&w=800&q=75"),
+    ];
+
+    private readonly List<Testimonio> testimonios =
+    [
+        new("Camila R.", "Toby", "El equipo fue increíblemente atento con Toby, se nota que aman lo que hacen.",
+            "https://images.unsplash.com/photo-1562337404-3044c84ac061?auto=format&fit=crop&w=200&q=75"),
+        new("Diego M.", "Luna", "Precios claros y agenda súper fácil desde la web. Volvemos siempre.",
+            "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=200&q=75"),
+        new("Valentina S.", "Kiwi", "El seguimiento después de la cirugía de Kiwi fue excelente, muy tranquilizador.",
+            "https://images.unsplash.com/photo-1581014226839-85d3349f754c?auto=format&fit=crop&w=200&q=75"),
+    ];
+}

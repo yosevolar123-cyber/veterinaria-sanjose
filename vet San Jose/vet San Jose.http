@@ -1,0 +1,6 @@
+@vet_San_Jose_HostAddress = http://localhost:5178
+
+GET {{vet_San_Jose_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

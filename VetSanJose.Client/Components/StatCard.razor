@@ -1,0 +1,17 @@
+<div class="tarjeta flex items-center gap-4 p-5">
+    <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl @FondoIcono">
+        @Icono
+    </span>
+    <div class="min-w-0">
+        <p class="truncate text-2xl font-bold @ColorValor">@Valor</p>
+        <p class="text-sm text-gray-500">@Etiqueta</p>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Icono { get; set; } = "";
+    [Parameter, EditorRequired] public string Valor { get; set; } = "";
+    [Parameter, EditorRequired] public string Etiqueta { get; set; } = "";
+    [Parameter] public string FondoIcono { get; set; } = "bg-[var(--color-celeste-suave)]";
+    [Parameter] public string ColorValor { get; set; } = "text-[var(--color-celeste-intenso)]";
+}

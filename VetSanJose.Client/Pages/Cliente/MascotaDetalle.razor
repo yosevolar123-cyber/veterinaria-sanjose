@@ -1,0 +1,99 @@
+@page "/mi-cuenta/mascotas/{Id:long}"
+@attribute [Authorize(Roles = Roles.Cliente)]
+@using VetSanJose.Shared.Mascotas
+@using VetSanJose.Shared.HistorialesMedicos
+@inject MascotasApiClient MascotasApiClient
+@inject HistorialMedicoApiClient HistorialApiClient
+
+<PageTitle>Mascota — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <a href="/mi-cuenta/mascotas" class="mb-4 inline-block text-sm text-[var(--color-celeste-intenso)] hover:underline">← Mis mascotas</a>
+
+    @if (cargando)
+    {
+        <div class="skeleton h-32"></div>
+    }
+    else if (mascota is null)
+    {
+        <p class="py-10 text-center text-gray-400">No se encontró esta mascota 🐾</p>
+    }
+    else
+    {
+        <div class="tarjeta mb-8 flex items-center gap-4 p-6">
+            <span class="text-5xl">@(mascota.Especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")</span>
+            <div>
+                <h1 class="text-2xl">@mascota.Nombre</h1>
+                <p class="text-gray-500">@mascota.Especie @(string.IsNullOrWhiteSpace(mascota.Raza) ? "" : $"· {mascota.Raza}")</p>
+                @if (mascota.Peso is not null)
+                {
+                    <p class="text-sm text-gray-400">Peso: @mascota.Peso kg</p>
+                }
+            </div>
+        </div>
+
+        <h2 class="mb-4 text-xl">Historial médico</h2>
+
+        @if (historial.Count == 0)
+        {
+            <p class="py-8 text-center text-gray-400">Aún no hay historial médico registrado 🐾</p>
+        }
+        else
+        {
+            <div class="space-y-4">
+                @foreach (var registro in historial)
+                {
+                    <div class="tarjeta p-5">
+                        <div class="mb-2 flex items-center justify-between text-sm text-gray-400">
+                            <span>🩺 @registro.DoctorNombre</span>
+                            <span>@registro.Fecha.LocalDateTime.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(registro.Diagnostico))
+                        {
+                            <p><span class="font-semibold">Diagnóstico:</span> @registro.Diagnostico</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(registro.Tratamiento))
+                        {
+                            <p><span class="font-semibold">Tratamiento:</span> @registro.Tratamiento</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(registro.Observaciones))
+                        {
+                            <p><span class="font-semibold">Observaciones:</span> @registro.Observaciones</p>
+                        }
+                        @if (registro.Insumos.Count > 0)
+                        {
+                            <p class="mt-2 text-sm text-gray-400">
+                                Insumos: @string.Join(", ", registro.Insumos.Select(i => $"{i.ProductoNombre} x{i.Cantidad}"))
+                            </p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public long Id { get; set; }
+
+    private MascotaDto? mascota;
+    private List<HistorialMedicoDto> historial = [];
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            mascota = await MascotasApiClient.GetByIdAsync(Id);
+            historial = await HistorialApiClient.GetPorMascotaAsync(Id);
+        }
+        catch (HttpRequestException)
+        {
+            mascota = null;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

@@ -1,0 +1,46 @@
+@page "/contacto"
+
+<PageTitle>Contacto — Veterinaria San José</PageTitle>
+
+<div class="mx-auto grid max-w-4xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-2">
+    <div>
+        <h1 class="mb-4 text-3xl">Contáctanos 🐾</h1>
+        <p class="mb-6 text-gray-500">¿Tienes dudas o quieres agendar una visita? Escríbenos.</p>
+        <ul class="space-y-2 text-sm text-gray-600">
+            <li>📍 Av. Principal 123, Zona Central</li>
+            <li>📞 +591 700 00000</li>
+            <li>✉️ contacto@vetsanjose.com</li>
+            <li>🕐 Lunes a sábado, 8:00 - 19:00</li>
+        </ul>
+    </div>
+
+    <form class="tarjeta space-y-3 p-6" @onsubmit="EnviarAsync" @onsubmit:preventDefault>
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+               placeholder="Nombre" @bind="nombre" />
+        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+               placeholder="Correo electrónico" @bind="email" />
+        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                  rows="4" placeholder="Mensaje" @bind="mensaje"></textarea>
+        <button type="submit" class="btn-primario w-full">Enviar mensaje</button>
+
+        @if (enviado)
+        {
+            <p class="text-sm text-[var(--color-exito)]">¡Gracias! Te contactaremos pronto.</p>
+        }
+    </form>
+</div>
+
+@code {
+    private string nombre = "";
+    private string email = "";
+    private string mensaje = "";
+    private bool enviado;
+
+    private Task EnviarAsync()
+    {
+        // No existe un endpoint de contacto en el backend; se confirma visualmente al usuario.
+        enviado = true;
+        nombre = email = mensaje = "";
+        return Task.CompletedTask;
+    }
+}

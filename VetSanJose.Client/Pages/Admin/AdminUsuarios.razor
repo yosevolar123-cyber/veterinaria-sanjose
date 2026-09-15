@@ -1,0 +1,193 @@
+@using VetSanJose.Shared.Usuarios
+@inject UsuariosApiClient UsuariosApiClient
+
+<div>
+    <div class="mb-4 flex items-center justify-between">
+        <select class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="filtroRol" @bind:after="CargarAsync">
+            <option value="">Todos los roles</option>
+            <option value="@Roles.Cliente">Cliente</option>
+            <option value="@Roles.Doctor">Doctor</option>
+            <option value="@Roles.Secretaria">Secretaria</option>
+            <option value="@Roles.Administrador">Administrador</option>
+        </select>
+        <button class="btn-primario" @onclick="AbrirCrear">+ Nuevo usuario</button>
+    </div>
+
+    @if (cargando)
+    {
+        <div class="skeleton h-40"></div>
+    }
+    else
+    {
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="border-b border-[var(--color-gris-borde)] text-gray-500">
+                        <th class="py-2">Nombre</th>
+                        <th class="py-2">Correo</th>
+                        <th class="py-2">Rol</th>
+                        <th class="py-2">Estado</th>
+                        <th class="py-2"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usuario in usuarios)
+                    {
+                        <tr class="border-b border-[var(--color-gris-borde)]">
+                            <td class="py-2">@usuario.Nombre @usuario.Apellido</td>
+                            <td class="py-2">@usuario.Email</td>
+                            <td class="py-2 capitalize">@usuario.Rol</td>
+                            <td class="py-2">
+                                <span class="rounded-full px-2 py-0.5 text-xs @(usuario.Activo ? "bg-green-50 text-[var(--color-exito)]" : "bg-red-50 text-[var(--color-error)]")">
+                                    @(usuario.Activo ? "Activo" : "Desactivado")
+                                </span>
+                            </td>
+                            <td class="py-2 text-right">
+                                <button class="text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(usuario)">Editar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<ModalShell @bind-Visible="modalVisible" Titulo="@(editandoId is null ? "Nuevo usuario" : "Editar usuario")">
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+    }
+    <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="form.Nombre" />
+            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Apellido" @bind="form.Apellido" />
+        </div>
+        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Correo" @bind="form.Email" disabled="@(editandoId is not null)" />
+        @if (editandoId is null)
+        {
+            <input type="password" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Contraseña temporal" @bind="form.Password" />
+        }
+        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Teléfono (opcional)" @bind="form.Telefono" />
+        <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="form.Rol">
+            <option value="@Roles.Cliente">Cliente</option>
+            <option value="@Roles.Doctor">Doctor</option>
+            <option value="@Roles.Secretaria">Secretaria</option>
+            <option value="@Roles.Administrador">Administrador</option>
+        </select>
+
+        @if (form.Rol == Roles.Doctor)
+        {
+            <div class="grid grid-cols-2 gap-3">
+                <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Especialidad" @bind="form.Especialidad" />
+                <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Matrícula" @bind="form.Matricula" />
+            </div>
+        }
+
+        @if (editandoId is not null)
+        {
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" @bind="form.Activo" /> Usuario activo
+            </label>
+        }
+
+        <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">
+            @(guardando ? "Guardando..." : "Guardar")
+        </button>
+    </div>
+</ModalShell>
+
+@code {
+    private List<UsuarioAdminDto> usuarios = [];
+    private string filtroRol = "";
+    private bool cargando = true;
+
+    private bool modalVisible;
+    private long? editandoId;
+    private bool guardando;
+    private string? error;
+    private FormModel form = new();
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        usuarios = await UsuariosApiClient.GetAllAsync(string.IsNullOrWhiteSpace(filtroRol) ? null : filtroRol);
+        cargando = false;
+    }
+
+    private void AbrirCrear()
+    {
+        editandoId = null;
+        form = new FormModel { Rol = Roles.Cliente };
+        error = null;
+        modalVisible = true;
+    }
+
+    private void AbrirEditar(UsuarioAdminDto usuario)
+    {
+        editandoId = usuario.Id;
+        form = new FormModel
+        {
+            Nombre = usuario.Nombre,
+            Apellido = usuario.Apellido,
+            Email = usuario.Email,
+            Telefono = usuario.Telefono,
+            Rol = usuario.Rol,
+            Activo = usuario.Activo,
+            Especialidad = usuario.Especialidad,
+            Matricula = usuario.Matricula,
+        };
+        error = null;
+        modalVisible = true;
+    }
+
+    private async Task GuardarAsync()
+    {
+        error = null;
+        guardando = true;
+        try
+        {
+            HttpResponseMessage response;
+            if (editandoId is null)
+            {
+                response = await UsuariosApiClient.CrearAsync(new CrearUsuarioRequest(
+                    form.Nombre, form.Apellido, form.Email, form.Password, form.Rol, form.Telefono,
+                    form.Especialidad, form.Matricula));
+            }
+            else
+            {
+                response = await UsuariosApiClient.ActualizarAsync(editandoId.Value, new ActualizarUsuarioRequest(
+                    form.Nombre, form.Apellido, form.Rol, form.Telefono, form.Activo,
+                    form.Especialidad, form.Matricula));
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                error = await response.LeerMensajeAsync();
+                return;
+            }
+
+            modalVisible = false;
+            await CargarAsync();
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private class FormModel
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string? Telefono { get; set; }
+        public string Rol { get; set; } = Roles.Cliente;
+        public bool Activo { get; set; } = true;
+        public string? Especialidad { get; set; }
+        public string? Matricula { get; set; }
+    }
+}

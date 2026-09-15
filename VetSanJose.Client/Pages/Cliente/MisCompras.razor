@@ -1,0 +1,67 @@
+@page "/mi-cuenta/compras"
+@attribute [Authorize(Roles = Roles.Cliente)]
+@using VetSanJose.Shared.Ventas
+@inject VentasApiClient VentasApiClient
+
+<PageTitle>Mis compras — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <h1 class="mb-6 text-3xl">Mis compras 🧾</h1>
+
+    @if (cargando)
+    {
+        <div class="space-y-3">
+            @for (var i = 0; i < 3; i++)
+            {
+                <div class="skeleton h-24"></div>
+            }
+        </div>
+    }
+    else if (ventas.Count == 0)
+    {
+        <p class="py-10 text-center text-gray-400">Aún no tienes compras registradas 🐾</p>
+    }
+    else
+    {
+        <div class="space-y-4">
+            @foreach (var venta in ventas.OrderByDescending(v => v.Fecha))
+            {
+                <div class="tarjeta p-5">
+                    <div class="mb-2 flex items-center justify-between text-sm text-gray-400">
+                        <span>@venta.Fecha.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span class="font-semibold text-[var(--color-celeste-intenso)]">@FormatoBs(venta.Total)</span>
+                    </div>
+                    <ul class="text-sm text-gray-600">
+                        @foreach (var detalle in venta.Detalles)
+                        {
+                            <li>@detalle.ProductoNombre x@detalle.Cantidad — @FormatoBs(detalle.Subtotal)</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<VentaDto> ventas = [];
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ventas = await VentasApiClient.GetMisVentasAsync();
+        }
+        catch (HttpRequestException)
+        {
+            ventas = [];
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private static string FormatoBs(decimal valor) => $"Bs {valor:N2}";
+}

@@ -1,0 +1,22 @@
+@page "/mi-cuenta"
+@attribute [Authorize(Roles = Roles.Cliente)]
+
+<PageTitle>Mi cuenta — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <h1 class="mb-6 text-3xl">Mi cuenta 🐾</h1>
+    <div class="grid gap-4 sm:grid-cols-3">
+        <a href="/mi-cuenta/mascotas" class="tarjeta p-6 text-center hover:shadow-lg">
+            <div class="mb-2 text-3xl">🐶</div>
+            <p class="font-semibold">Mis mascotas</p>
+        </a>
+        <a href="/mi-cuenta/citas" class="tarjeta p-6 text-center hover:shadow-lg">
+            <div class="mb-2 text-3xl">📅</div>
+            <p class="font-semibold">Mis citas</p>
+        </a>
+        <a href="/mi-cuenta/compras" class="tarjeta p-6 text-center hover:shadow-lg">
+            <div class="mb-2 text-3xl">🧾</div>
+            <p class="font-semibold">Mis compras</p>
+        </a>
+    </div>
+</div>

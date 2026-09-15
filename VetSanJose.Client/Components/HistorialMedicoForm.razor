@@ -1,0 +1,116 @@
+@using VetSanJose.Shared.HistorialesMedicos
+@using VetSanJose.Shared.Productos
+@inject HistorialMedicoApiClient HistorialApiClient
+@inject ProductosApiClient ProductosApiClient
+
+<div class="tarjeta space-y-4 p-6">
+    <h3 class="text-lg">Registrar historial médico</h3>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+    }
+    @if (exito)
+    {
+        <p class="rounded-lg bg-green-50 px-3 py-2 text-sm text-[var(--color-exito)]">¡Historial guardado correctamente! 🐾</p>
+    }
+
+    <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Diagnóstico" @bind="diagnostico"></textarea>
+    <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Tratamiento" @bind="tratamiento"></textarea>
+    <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Observaciones" @bind="observaciones"></textarea>
+
+    <div>
+        <div class="mb-2 flex items-center justify-between">
+            <label class="text-sm font-semibold text-gray-600">Insumos utilizados</label>
+            <button type="button" class="text-sm text-[var(--color-celeste-intenso)] hover:underline" @onclick="AgregarInsumo">+ Agregar insumo</button>
+        </div>
+
+        @for (var i = 0; i < insumos.Count; i++)
+        {
+            var index = i;
+            <div class="mb-2 flex items-center gap-2">
+                <select class="flex-1 rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="insumos[index].ProductoId">
+                    <option value="0">Selecciona un producto</option>
+                    @foreach (var producto in productos)
+                    {
+                        <option value="@producto.Id">@producto.Nombre (stock: @producto.Stock)</option>
+                    }
+                </select>
+                <input type="number" min="1" class="w-20 rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="insumos[index].Cantidad" />
+                <button type="button" class="text-[var(--color-error)]" @onclick="() => insumos.RemoveAt(index)">✕</button>
+            </div>
+        }
+    </div>
+
+    <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">
+        @(guardando ? "Guardando..." : "Guardar historial")
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public long MascotaId { get; set; }
+    [Parameter] public long? CitaId { get; set; }
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private List<ProductoDto> productos = [];
+    private List<InsumoItem> insumos = [];
+    private string diagnostico = "";
+    private string tratamiento = "";
+    private string observaciones = "";
+    private bool guardando;
+    private bool exito;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            productos = await ProductosApiClient.GetAllAsync();
+        }
+        catch (HttpRequestException)
+        {
+            productos = [];
+        }
+    }
+
+    private void AgregarInsumo() => insumos.Add(new InsumoItem());
+
+    private async Task GuardarAsync()
+    {
+        error = null;
+        exito = false;
+        guardando = true;
+
+        try
+        {
+            var insumosValidos = insumos
+                .Where(i => i.ProductoId > 0 && i.Cantidad > 0)
+                .Select(i => new InsumoUsadoRequest(i.ProductoId, i.Cantidad))
+                .ToList();
+
+            var response = await HistorialApiClient.CrearAsync(new CrearHistorialRequest(
+                CitaId, MascotaId, diagnostico, tratamiento, observaciones, insumosValidos));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                error = await response.LeerMensajeAsync();
+                return;
+            }
+
+            exito = true;
+            diagnostico = tratamiento = observaciones = "";
+            insumos.Clear();
+            await OnGuardado.InvokeAsync();
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private class InsumoItem
+    {
+        public long ProductoId { get; set; }
+        public int Cantidad { get; set; } = 1;
+    }
+}

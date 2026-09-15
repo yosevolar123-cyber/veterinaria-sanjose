@@ -1,0 +1,142 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.VerifyReferenceTrimCompatibility = 
+build_property.VerifyReferenceAotCompatibility = 
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = VetSanJose.Client
+build_property.RootNamespace = VetSanJose.Client
+build_property.ProjectDir = C:\Users\luis\Desktop\proyecto vete\vet San Jose\VetSanJose.Client\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 10.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\luis\Desktop\proyecto vete\vet San Jose\VetSanJose.Client
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/AgendaView.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBZ2VuZGFWaWV3LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/HistorialMedicoForm.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xIaXN0b3JpYWxNZWRpY29Gb3JtLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/LoginModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMb2dpbk1vZGFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/ModalShell.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNb2RhbFNoZWxsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/NoAutorizado.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xOb0F1dG9yaXphZG8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/NuevaCitaModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xOdWV2YUNpdGFNb2RhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Components/StatCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTdGF0Q2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Layout/Navbar.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE5hdmJhci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Admin/AdminCategorias.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQWRtaW5DYXRlZ29yaWFzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Admin/AdminProductos.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQWRtaW5Qcm9kdWN0b3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Admin/AdminProveedores.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQWRtaW5Qcm92ZWVkb3Jlcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Admin/AdminUsuarios.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQWRtaW5Vc3Vhcmlvcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Admin/PanelAdmin.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUGFuZWxBZG1pbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Cliente/Checkout.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZVxDaGVja291dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Cliente/MascotaDetalle.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZVxNYXNjb3RhRGV0YWxsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Cliente/MiCuenta.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZVxNaUN1ZW50YS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Cliente/MisCitas.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZVxNaXNDaXRhcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Cliente/MisCompras.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZVxNaXNDb21wcmFzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Cliente/MisMascotas.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2xpZW50ZVxNaXNNYXNjb3Rhcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Contacto.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29udGFjdG8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Doctor/PanelDoctor.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRG9jdG9yXFBhbmVsRG9jdG9yLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/NotFound.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90Rm91bmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Secretaria/PanelSecretaria.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VjcmV0YXJpYVxQYW5lbFNlY3JldGFyaWEucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/Pages/Tienda.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGllbmRhLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/luis/Desktop/proyecto vete/vet San Jose/VetSanJose.Client/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

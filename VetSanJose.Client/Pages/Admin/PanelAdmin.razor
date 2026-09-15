@@ -1,0 +1,140 @@
+@page "/panel-admin"
+@attribute [Authorize(Roles = Roles.Administrador)]
+@using VetSanJose.Shared.Dashboard
+@inject DashboardApiClient DashboardApiClient
+
+<PageTitle>Panel Administrador — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <h1 class="mb-8 text-3xl">Panel de administración ⚙️</h1>
+
+    <div class="mb-8 flex flex-wrap gap-2 rounded-full bg-[var(--color-celeste-suave)] p-1 sm:w-fit">
+        @foreach (var t in Enum.GetValues<Tab>())
+        {
+            <button class="rounded-full px-4 py-2 text-sm font-semibold transition-colors @(tab == t ? "bg-white shadow text-[var(--color-celeste-intenso)]" : "text-gray-500")"
+                    @onclick="() => tab = t">
+                @TituloTab(t)
+            </button>
+        }
+    </div>
+
+    <div class="route-fade" @key="tab">
+    @if (tab == Tab.Dashboard)
+    {
+        <div class="mb-6 flex flex-wrap items-center gap-3">
+            <label class="text-sm text-gray-500">Desde</label>
+            <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="desde" @bind:after="CargarDashboardAsync" />
+            <label class="text-sm text-gray-500">Hasta</label>
+            <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="hasta" @bind:after="CargarDashboardAsync" />
+        </div>
+
+        @if (dashboard is null)
+        {
+            <div class="skeleton h-40"></div>
+        }
+        else
+        {
+            <div class="mb-10 grid gap-4 sm:grid-cols-2">
+                <div data-aos="fade-up">
+                    <StatCard Icono="💰" Valor="@($"Bs {dashboard.VentasTotalPeriodo:N2}")" Etiqueta="@($"Ventas del período ({dashboard.CantidadVentasPeriodo} transacciones)")" />
+                </div>
+                <div data-aos="fade-up" data-aos-delay="80">
+                    <StatCard Icono="⚠️" Valor="@dashboard.ProductosStockBajo.Count.ToString()" Etiqueta="Productos con stock bajo"
+                              FondoIcono="bg-amber-50" ColorValor="text-[var(--color-advertencia)]" />
+                </div>
+            </div>
+
+            <div class="grid gap-8 sm:grid-cols-2">
+                <div>
+                    <h3 class="mb-4 text-lg">Citas por doctor</h3>
+                    @if (dashboard.CitasPorDoctor.Count == 0)
+                    {
+                        <p class="text-sm text-gray-400">Sin datos en este período.</p>
+                    }
+                    else
+                    {
+                        <ul class="space-y-2">
+                            @foreach (var (item, indice) in dashboard.CitasPorDoctor.Select((c, i) => (c, i)))
+                            {
+                                <li class="tarjeta flex items-center justify-between p-3 text-sm" data-aos="fade-up" data-aos-delay="@(indice * 60)">
+                                    <span>@item.DoctorNombre</span>
+                                    <span class="font-semibold">@item.Cantidad</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+
+                <div>
+                    <h3 class="mb-4 text-lg">Stock bajo</h3>
+                    @if (dashboard.ProductosStockBajo.Count == 0)
+                    {
+                        <p class="text-sm text-gray-400">Todo el stock está en buen nivel 🐾</p>
+                    }
+                    else
+                    {
+                        <ul class="space-y-2">
+                            @foreach (var (item, indice) in dashboard.ProductosStockBajo.Select((p, i) => (p, i)))
+                            {
+                                <li class="tarjeta flex items-center justify-between p-3 text-sm" data-aos="fade-up" data-aos-delay="@(indice * 60)">
+                                    <span>@item.Nombre</span>
+                                    <span class="font-semibold text-[var(--color-error)]">@item.Stock</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else if (tab == Tab.Usuarios)
+    {
+        <AdminUsuarios />
+    }
+    else if (tab == Tab.Productos)
+    {
+        <AdminProductos />
+    }
+    else if (tab == Tab.Categorias)
+    {
+        <AdminCategorias />
+    }
+    else if (tab == Tab.Proveedores)
+    {
+        <AdminProveedores />
+    }
+    </div>
+</div>
+
+@code {
+    private enum Tab { Dashboard, Usuarios, Productos, Categorias, Proveedores }
+
+    private Tab tab = Tab.Dashboard;
+    private AdminDashboardDto? dashboard;
+    private DateOnly? desde;
+    private DateOnly? hasta;
+
+    protected override Task OnInitializedAsync() => CargarDashboardAsync();
+
+    private async Task CargarDashboardAsync()
+    {
+        try
+        {
+            dashboard = await DashboardApiClient.GetAdminAsync(desde, hasta);
+        }
+        catch (HttpRequestException)
+        {
+            dashboard = new AdminDashboardDto(0, 0, [], []);
+        }
+    }
+
+    private static string TituloTab(Tab t) => t switch
+    {
+        Tab.Dashboard => "Dashboard",
+        Tab.Usuarios => "Usuarios",
+        Tab.Productos => "Productos",
+        Tab.Categorias => "Categorías",
+        Tab.Proveedores => "Proveedores",
+        _ => "",
+    };
+}

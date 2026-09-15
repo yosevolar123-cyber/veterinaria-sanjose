@@ -1,0 +1,91 @@
+@page "/checkout"
+@attribute [Authorize(Roles = Roles.Cliente)]
+@using VetSanJose.Shared.Ventas
+@inject CartService Cart
+@inject VentasApiClient VentasApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Checkout — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+    <h1 class="mb-6 text-3xl">Confirmar compra 🐾</h1>
+
+    @if (exito)
+    {
+        <div class="tarjeta p-8 text-center">
+            <div class="mb-3 text-5xl">🎉</div>
+            <h2 class="mb-2 text-xl">¡Compra realizada con éxito!</h2>
+            <p class="mb-6 text-gray-500">Total pagado: @FormatoBs(totalPagado)</p>
+            <a href="/tienda" class="btn-secundario">Seguir comprando</a>
+        </div>
+    }
+    else if (Cart.Items.Count == 0)
+    {
+        <p class="py-10 text-center text-gray-400">Tu carrito está vacío 🐾</p>
+        <div class="text-center">
+            <a href="/tienda" class="btn-primario">Ir a la tienda</a>
+        </div>
+    }
+    else
+    {
+        <div class="tarjeta divide-y divide-[var(--color-gris-borde)] p-6">
+            @foreach (var item in Cart.Items)
+            {
+                <div class="flex items-center justify-between py-3">
+                    <div>
+                        <p class="font-medium">@item.Nombre</p>
+                        <p class="text-sm text-gray-400">@item.Cantidad x @FormatoBs(item.Precio)</p>
+                    </div>
+                    <p class="font-semibold">@FormatoBs(item.Precio * item.Cantidad)</p>
+                </div>
+            }
+            <div class="flex items-center justify-between pt-4 text-lg font-semibold">
+                <span>Total</span>
+                <span>@FormatoBs(Cart.Total)</span>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <p class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+        }
+
+        <button class="btn-primario mt-6 w-full" disabled="@procesando" @onclick="ConfirmarAsync">
+            @(procesando ? "Procesando..." : $"Pagar {FormatoBs(Cart.Total)}")
+        </button>
+    }
+</div>
+
+@code {
+    private bool procesando;
+    private bool exito;
+    private decimal totalPagado;
+    private string? error;
+
+    private async Task ConfirmarAsync()
+    {
+        error = null;
+        procesando = true;
+        try
+        {
+            var items = Cart.Items.Select(i => new ItemCarritoRequest(i.ProductoId, i.Cantidad)).ToList();
+            var response = await VentasApiClient.CrearAsync(new CrearVentaRequest(items));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                error = await response.LeerMensajeAsync();
+                return;
+            }
+
+            totalPagado = Cart.Total;
+            Cart.Vaciar();
+            exito = true;
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private static string FormatoBs(decimal valor) => $"Bs {valor:N2}";
+}

@@ -1,0 +1,100 @@
+@page "/mi-cuenta/mascotas"
+@attribute [Authorize(Roles = Roles.Cliente)]
+@inject MascotasApiClient MascotasApiClient
+@using VetSanJose.Shared.Mascotas
+
+<PageTitle>Mis mascotas — Veterinaria San José</PageTitle>
+
+<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <div class="mb-6 flex items-center justify-between">
+        <h1 class="text-3xl">Mis mascotas 🐾</h1>
+        <button class="btn-primario" @onclick="() => mostrarFormulario = !mostrarFormulario">
+            @(mostrarFormulario ? "Cancelar" : "+ Nueva mascota")
+        </button>
+    </div>
+
+    @if (mostrarFormulario)
+    {
+        <EditForm Model="nuevaMascota" OnValidSubmit="CrearAsync" class="tarjeta mb-8 grid gap-3 p-6 sm:grid-cols-2">
+            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="nuevaMascota.Nombre" required />
+            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Especie (perro, gato...)" @bind="nuevaMascota.Especie" required />
+            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Raza" @bind="nuevaMascota.Raza" />
+            <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="nuevaMascota.Sexo">
+                <option value="">Sexo (opcional)</option>
+                <option value="macho">Macho</option>
+                <option value="hembra">Hembra</option>
+            </select>
+            <button type="submit" class="btn-primario sm:col-span-2">Guardar mascota</button>
+        </EditForm>
+    }
+
+    @if (cargando)
+    {
+        <div class="grid gap-4 sm:grid-cols-2">
+            @for (var i = 0; i < 4; i++)
+            {
+                <div class="skeleton h-24"></div>
+            }
+        </div>
+    }
+    else if (mascotas.Count == 0)
+    {
+        <p class="py-12 text-center text-gray-400">¡Aún no tienes mascotas registradas! 🐾</p>
+    }
+    else
+    {
+        <div class="grid gap-4 sm:grid-cols-2">
+            @foreach (var mascota in mascotas)
+            {
+                <div class="tarjeta p-5">
+                    <div class="mb-1 flex items-center justify-between">
+                        <h3 class="text-lg">@mascota.Nombre</h3>
+                        <span class="text-2xl">@(mascota.Especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")</span>
+                    </div>
+                    <p class="text-sm text-gray-500">@mascota.Especie @(string.IsNullOrWhiteSpace(mascota.Raza) ? "" : $"· {mascota.Raza}")</p>
+                    <a href="/mi-cuenta/mascotas/@mascota.Id" class="mt-3 inline-block text-sm text-[var(--color-celeste-intenso)] hover:underline">
+                        Ver detalle →
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<MascotaDto> mascotas = [];
+    private bool cargando = true;
+    private bool mostrarFormulario;
+    private NuevaMascotaModel nuevaMascota = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        mascotas = await MascotasApiClient.GetMisMascotasAsync();
+        cargando = false;
+    }
+
+    private async Task CrearAsync()
+    {
+        await MascotasApiClient.CrearAsync(new CrearMascotaRequest(
+            null, nuevaMascota.Nombre, nuevaMascota.Especie, nuevaMascota.Raza, null,
+            string.IsNullOrWhiteSpace(nuevaMascota.Sexo) ? null : nuevaMascota.Sexo, null));
+
+        nuevaMascota = new();
+        mostrarFormulario = false;
+        await CargarAsync();
+    }
+
+    private class NuevaMascotaModel
+    {
+        public string Nombre { get; set; } = "";
+        public string Especie { get; set; } = "";
+        public string? Raza { get; set; }
+        public string? Sexo { get; set; }
+    }
+}
