@@ -15,6 +15,23 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="VetSanJose.Client.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
+    <script type="text/javascript">
+        // Single Page Apps for GitHub Pages
+        // https://github.com/rafgraph/spa-github-pages
+        // Restaura la ruta original codificada por 404.html en el query string,
+        // usando la History API, antes de que Blazor arranque su enrutador.
+        (function (l) {
+            if (l.search[1] === '/') {
+                var decoded = l.search.slice(1).split('&').map(function (s) {
+                    return s.replace(/~and~/g, '&');
+                }).join('?');
+                window.history.replaceState(
+                    null, null,
+                    l.pathname.slice(0, -1) + decoded + l.hash
+                );
+            }
+        }(window.location));
+    </script>
 </head>
 
 <body>

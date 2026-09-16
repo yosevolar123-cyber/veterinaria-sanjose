@@ -37,9 +37,6 @@ jobs:
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           sed -i "s|<base href=\"/\" />|<base href=\"/${REPO_NAME}/\" />|g" output/wwwroot/index.html
 
-      - name: Add 404.html redirect
-        run: cp output/wwwroot/index.html output/wwwroot/404.html
-
       - name: Add .nojekyll
         run: touch output/wwwroot/.nojekyll
 
