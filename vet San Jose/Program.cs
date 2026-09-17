@@ -81,22 +81,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 const string corsPolicyName = "FrontendPolicy";
-const string gitHubPagesPolicyName = "AllowGitHubPages";
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(corsPolicyName, policy =>
     {
-        policy.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-
-    options.AddPolicy(gitHubPagesPolicyName, policy =>
-    {
-        policy.WithOrigins("https://yosevolar123-cyber.github.io")
+        policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -155,7 +145,6 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection();
 
 app.UseCors(corsPolicyName);
-app.UseCors(gitHubPagesPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
