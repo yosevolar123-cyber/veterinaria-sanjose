@@ -153,10 +153,10 @@
 
     private static string RolARuta(string rol) => rol switch
     {
-        Roles.Doctor => "/panel-doctor",
-        Roles.Secretaria => "/panel-secretaria",
-        Roles.Administrador => "/panel-admin",
-        _ => "/mi-cuenta",
+        Roles.Doctor => "panel-doctor",
+        Roles.Secretaria => "panel-secretaria",
+        Roles.Administrador => "panel-admin",
+        _ => "mi-cuenta",
     };
 
     private class LoginFormModel

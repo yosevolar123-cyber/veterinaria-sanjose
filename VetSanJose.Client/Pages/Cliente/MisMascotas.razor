@@ -52,7 +52,7 @@
                         <span class="text-2xl">@(mascota.Especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")</span>
                     </div>
                     <p class="text-sm text-gray-500">@mascota.Especie @(string.IsNullOrWhiteSpace(mascota.Raza) ? "" : $"· {mascota.Raza}")</p>
-                    <a href="/mi-cuenta/mascotas/@mascota.Id" class="mt-3 inline-block text-sm text-[var(--color-celeste-intenso)] hover:underline">
+                    <a href="mi-cuenta/mascotas/@mascota.Id" class="mt-3 inline-block text-sm text-[var(--color-celeste-intenso)] hover:underline">
                         Ver detalle →
                     </a>
                 </div>
