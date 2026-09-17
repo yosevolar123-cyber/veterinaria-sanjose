@@ -22,4 +22,8 @@
     <ProjectReference Include="..\VetSanJose.Domain\VetSanJose.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\404.html" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
 </Project>

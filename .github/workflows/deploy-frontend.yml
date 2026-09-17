@@ -37,6 +37,12 @@ jobs:
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           sed -i "s|<base href=\"/\" />|<base href=\"/${REPO_NAME}/\" />|g" output/wwwroot/index.html
 
+      - name: Ensure 404.html exists for SPA routing
+        run: |
+          if [ ! -f output/wwwroot/404.html ]; then
+            cp output/wwwroot/index.html output/wwwroot/404.html
+          fi
+
       - name: Add .nojekyll
         run: touch output/wwwroot/.nojekyll
 
