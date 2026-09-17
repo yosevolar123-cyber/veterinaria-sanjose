@@ -4,7 +4,7 @@
 
 <header class="sticky top-0 z-40 border-b border-transparent bg-white/80 backdrop-blur-md transition-colors">
     <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-        <a href="/" class="flex items-center gap-2">
+        <a href="" class="flex items-center gap-2">
             <svg viewBox="0 0 48 48" class="logo-animada h-9 w-9 text-[var(--color-celeste-intenso)]" fill="currentColor" aria-hidden="true">
                 <ellipse cx="24" cy="30" rx="12" ry="10" />
                 <ellipse cx="9" cy="16" rx="5" ry="6.5" />
@@ -16,9 +16,9 @@
         </a>
 
         <div class="hidden items-center gap-8 text-sm font-medium text-gray-600 sm:flex">
-            <a href="/" class="transition-colors hover:text-[var(--color-celeste-intenso)]">Inicio</a>
-            <a href="/tienda" class="transition-colors hover:text-[var(--color-celeste-intenso)]">Tienda</a>
-            <a href="/contacto" class="transition-colors hover:text-[var(--color-celeste-intenso)]">Contacto</a>
+            <a href="" class="transition-colors hover:text-[var(--color-celeste-intenso)]">Inicio</a>
+            <a href="tienda" class="transition-colors hover:text-[var(--color-celeste-intenso)]">Tienda</a>
+            <a href="contacto" class="transition-colors hover:text-[var(--color-celeste-intenso)]">Contacto</a>
         </div>
 
         <AuthorizeView>
@@ -72,10 +72,10 @@
         var rol = context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
         return rol switch
         {
-            Roles.Doctor => "/panel-doctor",
-            Roles.Secretaria => "/panel-secretaria",
-            Roles.Administrador => "/panel-admin",
-            _ => "/mi-cuenta",
+            Roles.Doctor => "panel-doctor",
+            Roles.Secretaria => "panel-secretaria",
+            Roles.Administrador => "panel-admin",
+            _ => "mi-cuenta",
         };
     }
 
@@ -84,6 +84,6 @@
         await TokenStorage.LimpiarAsync();
         AuthStateProvider.NotificarSesionCerrada();
         menuAbierto = false;
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }
