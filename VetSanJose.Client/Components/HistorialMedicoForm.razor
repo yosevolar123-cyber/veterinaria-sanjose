@@ -20,7 +20,7 @@
             <label class="text-sm font-semibold text-gray-600">Diagnóstico</label>
             <MicrofonoDictado OnTextoReconocido="TextoDictadoDiagnostico" />
         </div>
-        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Diagnóstico" @bind="diagnostico"></textarea>
+        <textarea class="w-full campo-brutal" rows="2" placeholder="Diagnóstico" @bind="diagnostico"></textarea>
     </div>
 
     <div>
@@ -28,7 +28,7 @@
             <label class="text-sm font-semibold text-gray-600">Tratamiento</label>
             <MicrofonoDictado OnTextoReconocido="TextoDictadoTratamiento" />
         </div>
-        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Tratamiento" @bind="tratamiento"></textarea>
+        <textarea class="w-full campo-brutal" rows="2" placeholder="Tratamiento" @bind="tratamiento"></textarea>
     </div>
 
     <div>
@@ -36,7 +36,7 @@
             <label class="text-sm font-semibold text-gray-600">Observaciones</label>
             <MicrofonoDictado OnTextoReconocido="TextoDictadoObservaciones" />
         </div>
-        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Observaciones" @bind="observaciones"></textarea>
+        <textarea class="w-full campo-brutal" rows="2" placeholder="Observaciones" @bind="observaciones"></textarea>
     </div>
 
     <div>
@@ -49,14 +49,14 @@
         {
             var index = i;
             <div class="mb-2 flex items-center gap-2">
-                <select class="flex-1 rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="insumos[index].ProductoId">
+                <select class="flex-1 campo-brutal-sm" @bind="insumos[index].ProductoId">
                     <option value="0">Selecciona un producto</option>
                     @foreach (var producto in productos)
                     {
                         <option value="@producto.Id">@producto.Nombre (stock: @producto.Stock)</option>
                     }
                 </select>
-                <input type="number" min="1" class="w-20 rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="insumos[index].Cantidad" />
+                <input type="number" min="1" class="w-20 campo-brutal-sm" @bind="insumos[index].Cantidad" />
                 <button type="button" class="text-[var(--color-error)]" @onclick="() => insumos.RemoveAt(index)">✕</button>
             </div>
         }

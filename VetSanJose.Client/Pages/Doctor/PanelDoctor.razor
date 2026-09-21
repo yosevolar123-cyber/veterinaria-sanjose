@@ -55,7 +55,7 @@
             }
 
             <div class="tarjeta mb-6 grid gap-3 p-6 sm:grid-cols-2">
-                <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="clienteSeleccionado" @bind:after="CargarMascotasAsync">
+                <select class="campo-brutal" @bind="clienteSeleccionado" @bind:after="CargarMascotasAsync">
                     <option value="0">Selecciona un cliente</option>
                     @foreach (var cliente in clientes)
                     {
@@ -63,7 +63,7 @@
                     }
                 </select>
 
-                <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="mascotaSeleccionada">
+                <select class="campo-brutal" @bind="mascotaSeleccionada">
                     <option value="0">Selecciona una mascota</option>
                     @foreach (var mascota in mascotas)
                     {

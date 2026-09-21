@@ -37,8 +37,8 @@
         <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
     }
     <div class="space-y-3">
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="nombre" />
-        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Descripción (opcional)" @bind="descripcion"></textarea>
+        <input class="w-full campo-brutal" placeholder="Nombre" @bind="nombre" />
+        <textarea class="w-full campo-brutal" rows="2" placeholder="Descripción (opcional)" @bind="descripcion"></textarea>
         <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">
             @(guardando ? "Guardando..." : "Guardar")
         </button>

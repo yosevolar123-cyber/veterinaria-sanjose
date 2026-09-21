@@ -15,11 +15,11 @@
     </div>
 
     <form class="tarjeta space-y-3 p-6" @onsubmit="EnviarAsync" @onsubmit:preventDefault>
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+        <input class="w-full campo-brutal"
                placeholder="Nombre" @bind="nombre" />
-        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+        <input type="email" class="w-full campo-brutal"
                placeholder="Correo electrónico" @bind="email" />
-        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+        <textarea class="w-full campo-brutal"
                   rows="4" placeholder="Mensaje" @bind="mensaje"></textarea>
         <button type="submit" class="btn-primario w-full">Enviar mensaje</button>
 

@@ -7,11 +7,11 @@
 <div>
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-3">
-            <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="fecha" @bind:after="CargarAsync" />
+            <input type="date" class="campo-brutal-sm" @bind="fecha" @bind:after="CargarAsync" />
 
             @if (MostrarFiltroDoctor)
             {
-                <select class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="doctorFiltro" @bind:after="CargarAsync">
+                <select class="campo-brutal-sm" @bind="doctorFiltro" @bind:after="CargarAsync">
                     <option value="0">Todos los doctores</option>
                     @foreach (var doctor in doctores)
                     {

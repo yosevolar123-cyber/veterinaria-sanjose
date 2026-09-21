@@ -22,7 +22,7 @@
             <div class="space-y-3">
                 <div>
                     <label class="mb-1 block text-xs text-gray-500">Cliente</label>
-                    <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="clienteSeleccionado" @bind:after="CargarMascotasAsync">
+                    <select class="w-full campo-brutal" @bind="clienteSeleccionado" @bind:after="CargarMascotasAsync">
                         <option value="0">Selecciona un cliente</option>
                         @foreach (var cliente in clientes)
                         {
@@ -35,7 +35,7 @@
                 {
                     <div>
                         <label class="mb-1 block text-xs text-gray-500">Mascota</label>
-                        <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="mascotaSeleccionada">
+                        <select class="w-full campo-brutal" @bind="mascotaSeleccionada">
                             <option value="0">Selecciona una mascota</option>
                             @foreach (var mascota in mascotas)
                             {
@@ -49,7 +49,7 @@
                 {
                     <div>
                         <label class="mb-1 block text-xs text-gray-500">Doctor</label>
-                        <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="doctorSeleccionado">
+                        <select class="w-full campo-brutal" @bind="doctorSeleccionado">
                             <option value="0">Selecciona un doctor</option>
                             @foreach (var doctor in doctores)
                             {
@@ -61,12 +61,12 @@
 
                 <div>
                     <label class="mb-1 block text-xs text-gray-500">Fecha y hora</label>
-                    <input type="datetime-local" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="fechaHora" />
+                    <input type="datetime-local" class="w-full campo-brutal" @bind="fechaHora" />
                 </div>
 
                 <div>
                     <label class="mb-1 block text-xs text-gray-500">Motivo</label>
-                    <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Motivo de la consulta" @bind="motivo" />
+                    <input class="w-full campo-brutal" placeholder="Motivo de la consulta" @bind="motivo" />
                 </div>
 
                 <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">

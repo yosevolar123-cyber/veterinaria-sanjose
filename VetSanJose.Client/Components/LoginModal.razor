@@ -36,12 +36,12 @@
                     <DataAnnotationsValidator />
                     <div class="space-y-3">
                         <div>
-                            <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                            <input type="email" class="w-full campo-brutal"
                                    placeholder="Correo electrónico" @bind="loginModel.Email" />
                             <ValidationMessage For="() => loginModel.Email" class="text-xs text-[var(--color-error)]" />
                         </div>
                         <div>
-                            <input type="password" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                            <input type="password" class="w-full campo-brutal"
                                    placeholder="Contraseña" @bind="loginModel.Password" />
                             <ValidationMessage For="() => loginModel.Password" class="text-xs text-[var(--color-error)]" />
                         </div>
@@ -57,16 +57,16 @@
                     <DataAnnotationsValidator />
                     <div class="space-y-3">
                         <div class="grid grid-cols-2 gap-3">
-                            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                            <input class="campo-brutal"
                                    placeholder="Nombre" @bind="registroModel.Nombre" />
-                            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                            <input class="campo-brutal"
                                    placeholder="Apellido" @bind="registroModel.Apellido" />
                         </div>
-                        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                        <input type="email" class="w-full campo-brutal"
                                placeholder="Correo electrónico" @bind="registroModel.Email" />
-                        <input type="password" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                        <input type="password" class="w-full campo-brutal"
                                placeholder="Contraseña (mín. 8 caracteres)" @bind="registroModel.Password" />
-                        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5 focus:border-[var(--color-celeste)] focus:outline-none"
+                        <input class="w-full campo-brutal"
                                placeholder="Teléfono (opcional)" @bind="registroModel.Telefono" />
                         <DataAnnotationsValidator />
                         <button type="submit" class="btn-primario w-full" disabled="@cargando">

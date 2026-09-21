@@ -17,10 +17,10 @@
     @if (mostrarFormulario)
     {
         <EditForm Model="nuevaMascota" OnValidSubmit="CrearAsync" class="tarjeta mb-8 grid gap-3 p-6 sm:grid-cols-2">
-            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="nuevaMascota.Nombre" required />
-            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Especie (perro, gato...)" @bind="nuevaMascota.Especie" required />
-            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Raza" @bind="nuevaMascota.Raza" />
-            <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="nuevaMascota.Sexo">
+            <input class="campo-brutal" placeholder="Nombre" @bind="nuevaMascota.Nombre" required />
+            <input class="campo-brutal" placeholder="Especie (perro, gato...)" @bind="nuevaMascota.Especie" required />
+            <input class="campo-brutal" placeholder="Raza" @bind="nuevaMascota.Raza" />
+            <select class="campo-brutal" @bind="nuevaMascota.Sexo">
                 <option value="">Sexo (opcional)</option>
                 <option value="macho">Macho</option>
                 <option value="hembra">Hembra</option>

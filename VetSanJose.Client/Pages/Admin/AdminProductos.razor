@@ -71,18 +71,18 @@
         <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
     }
     <div class="space-y-3">
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="form.Nombre" />
-        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Descripción" @bind="form.Descripcion"></textarea>
+        <input class="w-full campo-brutal" placeholder="Nombre" @bind="form.Nombre" />
+        <textarea class="w-full campo-brutal" rows="2" placeholder="Descripción" @bind="form.Descripcion"></textarea>
 
         <div class="grid grid-cols-2 gap-3">
-            <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="form.CategoriaId">
+            <select class="campo-brutal" @bind="form.CategoriaId">
                 <option value="0">Sin categoría</option>
                 @foreach (var categoria in categorias)
                 {
                     <option value="@categoria.Id">@categoria.Nombre</option>
                 }
             </select>
-            <select class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="form.ProveedorId">
+            <select class="campo-brutal" @bind="form.ProveedorId">
                 <option value="0">Sin proveedor</option>
                 @foreach (var proveedor in proveedores)
                 {
@@ -92,16 +92,16 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-            <input type="number" step="0.01" min="0" class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Precio (Bs)" @bind="form.Precio" />
+            <input type="number" step="0.01" min="0" class="campo-brutal" placeholder="Precio (Bs)" @bind="form.Precio" />
             @if (editandoId is null)
             {
-                <input type="number" min="0" class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Stock inicial" @bind="form.Stock" />
+                <input type="number" min="0" class="campo-brutal" placeholder="Stock inicial" @bind="form.Stock" />
             }
         </div>
 
         <div>
             <label class="mb-1 block text-xs text-gray-500">Tipo de producto</label>
-            <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="form.Tipo">
+            <select class="w-full campo-brutal" @bind="form.Tipo">
                 <option value="venta_publico">Venta al público (visible en la tienda)</option>
                 <option value="insumo_interno">Insumo interno (solo uso del doctor)</option>
             </select>
@@ -142,7 +142,7 @@
     @if (productoAjuste is not null)
     {
         <p class="mb-3 text-sm text-gray-500">Stock actual de <strong>@productoAjuste.Nombre</strong>: @productoAjuste.Stock</p>
-        <input type="number" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Cantidad (+ para sumar, - para restar)" @bind="ajusteCantidad" />
+        <input type="number" class="w-full campo-brutal" placeholder="Cantidad (+ para sumar, - para restar)" @bind="ajusteCantidad" />
         <button class="btn-primario mt-3 w-full" @onclick="AplicarAjusteAsync">Aplicar ajuste</button>
     }
 </ModalShell>

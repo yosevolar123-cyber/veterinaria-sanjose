@@ -5,11 +5,11 @@
 <div class="mb-6 flex flex-wrap items-end gap-3">
     <div>
         <label class="mb-1 block text-sm text-gray-500">Desde</label>
-        <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="desde" @bind:after="CargarAsync" />
+        <input type="date" class="campo-brutal-sm" @bind="desde" @bind:after="CargarAsync" />
     </div>
     <div>
         <label class="mb-1 block text-sm text-gray-500">Hasta</label>
-        <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="hasta" @bind:after="CargarAsync" />
+        <input type="date" class="campo-brutal-sm" @bind="hasta" @bind:after="CargarAsync" />
     </div>
     <button class="btn-secundario" disabled="@(reporte is null || descargando)" @onclick="DescargarPdfAsync">
         @(descargando ? "Generando PDF..." : "📄 Exportar PDF")

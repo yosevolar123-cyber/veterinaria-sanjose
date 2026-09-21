@@ -38,11 +38,11 @@
         <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
     }
     <div class="space-y-3">
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre de la empresa" @bind="form.Nombre" />
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre de contacto" @bind="form.ContactoNombre" />
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Teléfono" @bind="form.Telefono" />
-        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Correo" @bind="form.Email" />
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Dirección" @bind="form.Direccion" />
+        <input class="w-full campo-brutal" placeholder="Nombre de la empresa" @bind="form.Nombre" />
+        <input class="w-full campo-brutal" placeholder="Nombre de contacto" @bind="form.ContactoNombre" />
+        <input class="w-full campo-brutal" placeholder="Teléfono" @bind="form.Telefono" />
+        <input type="email" class="w-full campo-brutal" placeholder="Correo" @bind="form.Email" />
+        <input class="w-full campo-brutal" placeholder="Dirección" @bind="form.Direccion" />
 
         @if (editandoId is not null)
         {

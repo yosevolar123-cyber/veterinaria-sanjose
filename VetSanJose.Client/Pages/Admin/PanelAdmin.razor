@@ -23,9 +23,9 @@
     {
         <div class="mb-6 flex flex-wrap items-center gap-3">
             <label class="text-sm text-gray-500">Desde</label>
-            <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="desde" @bind:after="CargarDashboardAsync" />
+            <input type="date" class="campo-brutal-sm" @bind="desde" @bind:after="CargarDashboardAsync" />
             <label class="text-sm text-gray-500">Hasta</label>
-            <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="hasta" @bind:after="CargarDashboardAsync" />
+            <input type="date" class="campo-brutal-sm" @bind="hasta" @bind:after="CargarDashboardAsync" />
         </div>
 
         @if (dashboard is null)

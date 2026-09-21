@@ -3,7 +3,7 @@
 
 <div>
     <div class="mb-4 flex items-center justify-between">
-        <select class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="filtroRol" @bind:after="CargarAsync">
+        <select class="campo-brutal-sm" @bind="filtroRol" @bind:after="CargarAsync">
             <option value="">Todos los roles</option>
             <option value="@Roles.Cliente">Cliente</option>
             <option value="@Roles.Doctor">Doctor</option>
@@ -60,16 +60,16 @@
     }
     <div class="space-y-3">
         <div class="grid grid-cols-2 gap-3">
-            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Nombre" @bind="form.Nombre" />
-            <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Apellido" @bind="form.Apellido" />
+            <input class="campo-brutal" placeholder="Nombre" @bind="form.Nombre" />
+            <input class="campo-brutal" placeholder="Apellido" @bind="form.Apellido" />
         </div>
-        <input type="email" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Correo" @bind="form.Email" disabled="@(editandoId is not null)" />
+        <input type="email" class="w-full campo-brutal" placeholder="Correo" @bind="form.Email" disabled="@(editandoId is not null)" />
         @if (editandoId is null)
         {
-            <input type="password" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Contraseña temporal" @bind="form.Password" />
+            <input type="password" class="w-full campo-brutal" placeholder="Contraseña temporal" @bind="form.Password" />
         }
-        <input type="tel" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Teléfono (opcional)" @bind="form.Telefono" />
-        <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="form.Rol">
+        <input type="tel" class="w-full campo-brutal" placeholder="Teléfono (opcional)" @bind="form.Telefono" />
+        <select class="w-full campo-brutal" @bind="form.Rol">
             <option value="@Roles.Cliente">Cliente</option>
             <option value="@Roles.Doctor">Doctor</option>
             <option value="@Roles.Secretaria">Secretaria</option>
@@ -79,8 +79,8 @@
         @if (form.Rol == Roles.Doctor)
         {
             <div class="grid grid-cols-2 gap-3">
-                <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Especialidad" @bind="form.Especialidad" />
-                <input class="rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Matrícula" @bind="form.Matricula" />
+                <input class="campo-brutal" placeholder="Especialidad" @bind="form.Especialidad" />
+                <input class="campo-brutal" placeholder="Matrícula" @bind="form.Matricula" />
             </div>
         }
 

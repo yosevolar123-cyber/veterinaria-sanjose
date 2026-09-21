@@ -11,11 +11,12 @@
   --color-exito: #22c55e;
   --color-advertencia: #f59e0b;
   --color-error: #ef4444;
+  --color-tinta: #0f172a;
 
   --font-titulos: "Baloo 2", sans-serif;
   --font-cuerpo: "Inter", sans-serif;
 
-  --radius-card: 20px;
+  --radius-card: 14px;
 }
 
 @layer base {
@@ -26,31 +27,70 @@
 
   h1, h2, h3, h4 {
     @apply font-titulos font-bold text-slate-800;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer components {
+  /* Botones: bordes gruesos, sombra dura desplazada, se "presionan" al hacer clic. */
   .btn-primario {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-celeste)] px-6 py-3
-           font-semibold text-white shadow-md transition-all duration-200 ease-out
-           hover:bg-[var(--color-celeste-hover)] hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-[3px] border-[var(--color-tinta)]
+           bg-[var(--color-celeste)] px-6 py-3 font-bold text-[var(--color-tinta)]
+           transition-all duration-150 ease-out;
+    box-shadow: 4px 4px 0 0 var(--color-tinta);
+  }
+  .btn-primario:hover {
+    @apply bg-[var(--color-celeste-hover)];
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-tinta);
+  }
+  .btn-primario:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 0 var(--color-tinta);
   }
 
   .btn-secundario {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-[var(--color-celeste)]
-           px-6 py-3 font-semibold text-[var(--color-celeste-intenso)] transition-all duration-200 ease-out
-           hover:bg-[var(--color-celeste-suave)] active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-[3px] border-[var(--color-tinta)]
+           bg-white px-6 py-3 font-bold text-[var(--color-tinta)] transition-all duration-150 ease-out;
+    box-shadow: 4px 4px 0 0 var(--color-tinta);
+  }
+  .btn-secundario:hover {
+    @apply bg-[var(--color-celeste-suave)];
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-tinta);
+  }
+  .btn-secundario:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 0 var(--color-tinta);
   }
 
-  .tarjeta {
-    @apply rounded-[var(--radius-card)] bg-white shadow-[0_4px_20px_rgba(2,132,199,0.08)]
-           transition-all duration-200 ease-out;
-  }
-
+  /* Tarjetas: borde negro visible + sombra dura en vez de blur suave. */
+  .tarjeta,
   .tarjeta-producto {
-    @apply rounded-[var(--radius-card)] bg-white shadow-[0_4px_20px_rgba(2,132,199,0.08)]
-           transition-all duration-200 ease-out
-           hover:scale-[1.03] hover:shadow-[0_8px_28px_rgba(2,132,199,0.16)];
+    @apply rounded-[var(--radius-card)] border-2 border-[var(--color-tinta)] bg-white transition-all duration-200 ease-out;
+    box-shadow: 5px 5px 0 0 var(--color-tinta);
+  }
+
+  .tarjeta-producto:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 0 var(--color-tinta);
+  }
+
+  /* Campos de formulario: reemplaza el borde gris suave repetido en toda la app. */
+  .campo-brutal,
+  .campo-brutal-sm {
+    @apply w-full rounded-lg border-2 border-[var(--color-tinta)] bg-white transition-colors;
+  }
+  .campo-brutal {
+    @apply px-4 py-2.5;
+  }
+  .campo-brutal-sm {
+    @apply px-3 py-2 text-sm;
+  }
+  .campo-brutal:focus,
+  .campo-brutal-sm:focus {
+    @apply outline-none bg-[var(--color-celeste-suave)];
+    box-shadow: 3px 3px 0 0 var(--color-tinta);
   }
 
   .separador-huella::before {
@@ -59,7 +99,7 @@
   }
 
   .skeleton {
-    @apply animate-pulse rounded-xl bg-[var(--color-celeste-suave)];
+    @apply animate-pulse rounded-xl border-2 border-dashed border-[var(--color-gris-borde)] bg-[var(--color-celeste-suave)];
   }
 }
 
@@ -75,6 +115,17 @@
   .logo-animada {
     animation: logoPop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 1;
     transform-origin: center;
+  }
+
+  /* Motivo decorativo de patitas para fondos de secciones no clínicas (p. ej. el hero público). */
+  .fondo-huellas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.14;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='white'%3E%3Cellipse cx='24' cy='30' rx='10' ry='8'/%3E%3Cellipse cx='11' cy='18' rx='4' ry='5.5'/%3E%3Cellipse cx='20' cy='12' rx='4' ry='5.5'/%3E%3Cellipse cx='28' cy='12' rx='4' ry='5.5'/%3E%3Cellipse cx='37' cy='18' rx='4' ry='5.5'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+    animation: deslizarHuellas 45s linear infinite;
   }
 }
 
@@ -110,8 +161,33 @@
   }
 }
 
+@keyframes deslizarHuellas {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 480px 480px;
+  }
+}
+
+/* Respeta la preferencia del sistema operativo: sin animaciones ni transiciones,
+   incluidas las que dispara AOS al hacer scroll. Nunca debe ocultar datos clínicos. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .fondo-huellas {
+    animation: none;
+  }
+}
+
 #blazor-error-ui {
   background: var(--color-advertencia);
+  border-top: 3px solid var(--color-tinta);
   bottom: 0;
   box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
   display: none;
