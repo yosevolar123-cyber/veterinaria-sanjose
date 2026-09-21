@@ -10,16 +10,18 @@ namespace vet_San_Jose.Controllers;
 [Authorize]
 public class ArchivosController(IStorageService storageService) : ControllerBase
 {
-    private const long TamanoMaximoBytes = 5 * 1024 * 1024;
+    private const long TamanoMaximoBytes = 10 * 1024 * 1024;
     private static readonly HashSet<string> ContentTypesPermitidos = new(StringComparer.OrdinalIgnoreCase)
     {
-        "image/jpeg", "image/png", "image/webp",
+        "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif",
     };
     private static readonly Dictionary<string, string> ExtensionPorContentType = new(StringComparer.OrdinalIgnoreCase)
     {
         ["image/jpeg"] = "jpg",
+        ["image/jpg"] = "jpg",
         ["image/png"] = "png",
         ["image/webp"] = "webp",
+        ["image/gif"] = "gif",
     };
     private static readonly Dictionary<string, string[]> RolesPorCarpeta = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -48,13 +50,13 @@ public class ArchivosController(IStorageService storageService) : ControllerBase
 
         if (archivo.Length > TamanoMaximoBytes)
         {
-            return BadRequest(new { mensaje = "El archivo supera el tamaño máximo permitido (5 MB)." });
+            return BadRequest(new { mensaje = "El archivo supera el tamaño máximo permitido (10 MB)." });
         }
 
         var contentType = archivo.ContentType;
         if (string.IsNullOrEmpty(contentType) || !ContentTypesPermitidos.Contains(contentType))
         {
-            return BadRequest(new { mensaje = "Formato no soportado. Use JPEG, PNG o WEBP." });
+            return BadRequest(new { mensaje = "Formato no soportado. Use JPEG, PNG, WEBP o GIF." });
         }
 
         var extension = ExtensionPorContentType[contentType];

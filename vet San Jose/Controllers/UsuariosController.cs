@@ -55,4 +55,12 @@ public class UsuariosController(
 
         return Ok(await usuariosService.ActualizarAsync(id, request, cancellationToken));
     }
+
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = Roles.Administrador)]
+    public async Task<IActionResult> Eliminar(long id, CancellationToken cancellationToken)
+    {
+        await usuariosService.EliminarAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

@@ -77,6 +77,31 @@ public class UsuariosService(IAppDbContext db, ICurrentUser currentUser, IPasswo
         return Mapear(usuario);
     }
 
+    public async Task EliminarAsync(long id, CancellationToken cancellationToken)
+    {
+        var usuario = await BuscarAsync(id, cancellationToken);
+
+        if (usuario.Id == currentUser.Id)
+        {
+            throw new ConflictException("No puedes eliminar tu propio usuario.");
+        }
+
+        var tieneRegistrosAsociados =
+            await db.Mascotas.AnyAsync(m => m.ClienteId == id, cancellationToken) ||
+            await db.Citas.AnyAsync(c => c.DoctorId == id || c.CreadoPor == id, cancellationToken) ||
+            await db.HistorialesMedicos.AnyAsync(h => h.DoctorId == id, cancellationToken) ||
+            await db.Ventas.AnyAsync(v => v.ClienteId == id, cancellationToken);
+
+        if (tieneRegistrosAsociados)
+        {
+            throw new ConflictException(
+                "No se puede eliminar este usuario porque tiene mascotas, citas, ventas o historial médico asociados. Desactívalo en su lugar.");
+        }
+
+        db.Usuarios.Remove(usuario);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<Usuario> BuscarAsync(long id, CancellationToken cancellationToken)
     {
         return await db.Usuarios.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)

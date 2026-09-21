@@ -10,14 +10,19 @@ internal static class UsuarioValidationRules
 {
     public static readonly Regex TelefonoRegex = new(@"^\+?[0-9]{7,15}$", RegexOptions.Compiled);
     public const string TelefonoMensaje = "Telefono debe contener solo digitos (7 a 15), con un '+' opcional al inicio.";
+
+    public static readonly Regex NombreRegex = new(@"^[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+$", RegexOptions.Compiled);
+    public const string NombreMensaje = "Solo se permiten letras.";
 }
 
 public class CrearUsuarioRequestValidator : AbstractValidator<CrearUsuarioRequest>
 {
     public CrearUsuarioRequestValidator()
     {
-        RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Apellido).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100)
+            .Matches(UsuarioValidationRules.NombreRegex).WithMessage(UsuarioValidationRules.NombreMensaje);
+        RuleFor(x => x.Apellido).NotEmpty().MaximumLength(100)
+            .Matches(UsuarioValidationRules.NombreRegex).WithMessage(UsuarioValidationRules.NombreMensaje);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(255);
         RuleFor(x => x.Password).NotEmpty().MinimumLength(8);
         RuleFor(x => x.Rol).Must(r => Roles.Todos.Contains(r))
@@ -34,8 +39,10 @@ public class ActualizarUsuarioRequestValidator : AbstractValidator<ActualizarUsu
 {
     public ActualizarUsuarioRequestValidator()
     {
-        RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Apellido).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100)
+            .Matches(UsuarioValidationRules.NombreRegex).WithMessage(UsuarioValidationRules.NombreMensaje);
+        RuleFor(x => x.Apellido).NotEmpty().MaximumLength(100)
+            .Matches(UsuarioValidationRules.NombreRegex).WithMessage(UsuarioValidationRules.NombreMensaje);
         RuleFor(x => x.Rol).Must(r => Roles.Todos.Contains(r))
             .WithMessage($"Rol debe ser uno de: {string.Join(", ", Roles.Todos)}.");
         RuleFor(x => x.Telefono).MaximumLength(30)

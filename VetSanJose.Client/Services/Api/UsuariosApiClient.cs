@@ -30,4 +30,9 @@ public class UsuariosApiClient(HttpClient http)
     {
         return await http.PutAsJsonAsync($"api/usuarios/{id}", request);
     }
+
+    public async Task<HttpResponseMessage> EliminarAsync(long id)
+    {
+        return await http.DeleteAsync($"api/usuarios/{id}");
+    }
 }

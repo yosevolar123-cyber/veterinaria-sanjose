@@ -57,18 +57,26 @@
                     <DataAnnotationsValidator />
                     <div class="space-y-3">
                         <div class="grid grid-cols-2 gap-3">
-                            <input class="campo-brutal"
-                                   placeholder="Nombre" @bind="registroModel.Nombre" />
-                            <input class="campo-brutal"
-                                   placeholder="Apellido" @bind="registroModel.Apellido" />
+                            <div>
+                                <input class="campo-brutal w-full"
+                                       placeholder="Nombre" @bind="registroModel.Nombre" />
+                                <ValidationMessage For="() => registroModel.Nombre" class="text-xs text-[var(--color-error)]" />
+                            </div>
+                            <div>
+                                <input class="campo-brutal w-full"
+                                       placeholder="Apellido" @bind="registroModel.Apellido" />
+                                <ValidationMessage For="() => registroModel.Apellido" class="text-xs text-[var(--color-error)]" />
+                            </div>
                         </div>
                         <input type="email" class="w-full campo-brutal"
                                placeholder="Correo electrónico" @bind="registroModel.Email" />
                         <input type="password" class="w-full campo-brutal"
                                placeholder="Contraseña (mín. 8 caracteres)" @bind="registroModel.Password" />
-                        <input class="w-full campo-brutal"
-                               placeholder="Teléfono (opcional)" @bind="registroModel.Telefono" />
-                        <DataAnnotationsValidator />
+                        <div>
+                            <input type="tel" class="w-full campo-brutal"
+                                   placeholder="Teléfono (opcional)" @bind="registroModel.Telefono" />
+                            <ValidationMessage For="() => registroModel.Telefono" class="text-xs text-[var(--color-error)]" />
+                        </div>
                         <button type="submit" class="btn-primario w-full" disabled="@cargando">
                             @(cargando ? "Creando cuenta..." : "Registrarme")
                         </button>
@@ -171,8 +179,13 @@
 
     private class RegistroFormModel
     {
-        [Required] public string Nombre { get; set; } = "";
-        [Required] public string Apellido { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa tu nombre")]
+        [RegularExpression(@"^[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+$", ErrorMessage = "Solo se permiten letras")]
+        public string Nombre { get; set; } = "";
+
+        [Required(ErrorMessage = "Ingresa tu apellido")]
+        [RegularExpression(@"^[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+$", ErrorMessage = "Solo se permiten letras")]
+        public string Apellido { get; set; } = "";
 
         [Required(ErrorMessage = "Ingresa tu correo")]
         [EmailAddress(ErrorMessage = "Correo inválido")]
@@ -182,6 +195,7 @@
         [MinLength(8, ErrorMessage = "Mínimo 8 caracteres")]
         public string Password { get; set; } = "";
 
+        [RegularExpression(@"^\+?[0-9]{7,15}$", ErrorMessage = "Solo números (7 a 15 dígitos), '+' opcional al inicio")]
         public string? Telefono { get; set; }
     }
 }

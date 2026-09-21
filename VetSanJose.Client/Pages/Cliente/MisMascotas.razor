@@ -26,16 +26,28 @@
                 <option value="hembra">Hembra</option>
             </select>
             <div class="sm:col-span-2">
-                <label class="mb-1 block text-xs text-gray-500">Foto (opcional, JPEG/PNG/WEBP, máx. 5 MB)</label>
-                <InputFile OnChange="SubirFotoAsync" accept="image/jpeg,image/png,image/webp" disabled="@subiendoFoto" />
-                @if (subiendoFoto)
-                {
-                    <p class="mt-1 text-xs text-gray-400">Subiendo foto...</p>
-                }
-                @if (!string.IsNullOrEmpty(errorFoto))
-                {
-                    <p class="mt-1 text-xs text-[var(--color-error)]">@errorFoto</p>
-                }
+                <label class="mb-1 block text-xs text-gray-500">Foto (opcional, JPEG/PNG/WEBP/GIF, máx. 10 MB)</label>
+                <div class="flex items-center gap-3">
+                    @if (!string.IsNullOrEmpty(fotoPreviewUrl))
+                    {
+                        <img src="@fotoPreviewUrl" class="h-20 w-20 shrink-0 rounded-full border-2 border-dashed border-[var(--color-celeste-intenso)] object-cover" alt="Vista previa de la foto" />
+                    }
+                    <div class="flex-1">
+                        <InputFile OnChange="SubirFotoAsync" accept="image/*" disabled="@subiendoFoto" />
+                        @if (!string.IsNullOrEmpty(fotoPreviewUrl))
+                        {
+                            <p class="mt-1 text-xs text-gray-400">Así se verá (recortada en círculo).</p>
+                        }
+                        @if (subiendoFoto)
+                        {
+                            <p class="mt-1 text-xs text-gray-400">Subiendo foto...</p>
+                        }
+                        @if (!string.IsNullOrEmpty(errorFoto))
+                        {
+                            <p class="mt-1 text-xs text-[var(--color-error)]">@errorFoto</p>
+                        }
+                    </div>
+                </div>
             </div>
             <button type="submit" class="btn-primario sm:col-span-2">Guardar mascota</button>
         </EditForm>
@@ -89,8 +101,13 @@
 
     private bool subiendoFoto;
     private string? errorFoto;
+    private string? fotoPreviewUrl;
 
-    private const long TamanoMaximoFotoBytes = 5 * 1024 * 1024;
+    private const long TamanoMaximoFotoBytes = 10 * 1024 * 1024;
+    private static readonly HashSet<string> ContentTypesPermitidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif",
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,18 +124,30 @@
     private async Task SubirFotoAsync(InputFileChangeEventArgs e)
     {
         errorFoto = null;
+        fotoPreviewUrl = null;
         var archivo = e.File;
+
+        if (!ContentTypesPermitidos.Contains(archivo.ContentType))
+        {
+            errorFoto = "Formato no soportado. Usa una imagen JPEG, PNG, WEBP o GIF.";
+            return;
+        }
+
         if (archivo.Size > TamanoMaximoFotoBytes)
         {
-            errorFoto = "El archivo supera el tamaño máximo permitido (5 MB).";
+            errorFoto = "El archivo supera el tamaño máximo permitido (10 MB).";
             return;
         }
 
         subiendoFoto = true;
         try
         {
-            await using var stream = archivo.OpenReadStream(TamanoMaximoFotoBytes);
-            var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("mascotas", stream, archivo.Name, archivo.ContentType);
+            using var ms = new MemoryStream();
+            await archivo.OpenReadStream(TamanoMaximoFotoBytes).CopyToAsync(ms);
+            fotoPreviewUrl = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+            ms.Position = 0;
+
+            var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("mascotas", ms, archivo.Name, archivo.ContentType);
             if (exito)
             {
                 nuevaMascota.FotoUrl = url;
@@ -142,6 +171,7 @@
 
         nuevaMascota = new();
         errorFoto = null;
+        fotoPreviewUrl = null;
         mostrarFormulario = false;
         await CargarAsync();
     }

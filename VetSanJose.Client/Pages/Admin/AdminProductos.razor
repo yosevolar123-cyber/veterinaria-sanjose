@@ -108,22 +108,33 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-xs text-gray-500">Imagen del producto (JPEG, PNG o WEBP, máx. 5 MB)</label>
-            <InputFile OnChange="SubirImagenAsync" accept="image/jpeg,image/png,image/webp" disabled="@subiendoImagen" />
-            @if (subiendoImagen)
-            {
-                <p class="mt-1 text-xs text-gray-400">Subiendo imagen...</p>
-            }
-            @if (!string.IsNullOrEmpty(errorImagen))
-            {
-                <p class="mt-1 text-xs text-[var(--color-error)]">@errorImagen</p>
-            }
+            <label class="mb-1 block text-xs text-gray-500">Imagen del producto (JPEG, PNG, WEBP o GIF, máx. 10 MB)</label>
+            <div class="flex items-center gap-3">
+                @if (!string.IsNullOrWhiteSpace(imagenPreviewUrl))
+                {
+                    <img src="@imagenPreviewUrl" class="h-24 w-24 shrink-0 rounded-xl border-2 border-dashed border-[var(--color-celeste-intenso)] object-cover" alt="Vista previa" />
+                }
+                else if (!string.IsNullOrWhiteSpace(form.ImagenUrl))
+                {
+                    <img src="@form.ImagenUrl" class="h-24 w-24 shrink-0 rounded-xl object-cover" alt="Vista previa" />
+                }
+                <div class="flex-1">
+                    <InputFile OnChange="SubirImagenAsync" accept="image/*" disabled="@subiendoImagen" />
+                    @if (!string.IsNullOrWhiteSpace(imagenPreviewUrl))
+                    {
+                        <p class="mt-1 text-xs text-gray-400">Así se verá en la tienda.</p>
+                    }
+                    @if (subiendoImagen)
+                    {
+                        <p class="mt-1 text-xs text-gray-400">Subiendo imagen...</p>
+                    }
+                    @if (!string.IsNullOrEmpty(errorImagen))
+                    {
+                        <p class="mt-1 text-xs text-[var(--color-error)]">@errorImagen</p>
+                    }
+                </div>
+            </div>
         </div>
-
-        @if (!string.IsNullOrWhiteSpace(form.ImagenUrl))
-        {
-            <img src="@form.ImagenUrl" class="h-24 w-24 rounded-xl object-cover" alt="Vista previa" />
-        }
 
         @if (editandoId is not null)
         {
@@ -165,8 +176,13 @@
 
     private bool subiendoImagen;
     private string? errorImagen;
+    private string? imagenPreviewUrl;
 
-    private const long TamanoMaximoImagenBytes = 5 * 1024 * 1024;
+    private const long TamanoMaximoImagenBytes = 10 * 1024 * 1024;
+    private static readonly HashSet<string> ContentTypesPermitidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif",
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -187,6 +203,8 @@
         editandoId = null;
         form = new FormModel();
         error = null;
+        imagenPreviewUrl = null;
+        errorImagen = null;
         modalVisible = true;
     }
 
@@ -205,6 +223,8 @@
             Tipo = producto.Tipo,
         };
         error = null;
+        imagenPreviewUrl = null;
+        errorImagen = null;
         modalVisible = true;
     }
 
@@ -230,18 +250,30 @@
     private async Task SubirImagenAsync(InputFileChangeEventArgs e)
     {
         errorImagen = null;
+        imagenPreviewUrl = null;
         var archivo = e.File;
+
+        if (!ContentTypesPermitidos.Contains(archivo.ContentType))
+        {
+            errorImagen = "Formato no soportado. Usa una imagen JPEG, PNG, WEBP o GIF.";
+            return;
+        }
+
         if (archivo.Size > TamanoMaximoImagenBytes)
         {
-            errorImagen = "El archivo supera el tamaño máximo permitido (5 MB).";
+            errorImagen = "El archivo supera el tamaño máximo permitido (10 MB).";
             return;
         }
 
         subiendoImagen = true;
         try
         {
-            await using var stream = archivo.OpenReadStream(TamanoMaximoImagenBytes);
-            var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("productos", stream, archivo.Name, archivo.ContentType);
+            using var ms = new MemoryStream();
+            await archivo.OpenReadStream(TamanoMaximoImagenBytes).CopyToAsync(ms);
+            imagenPreviewUrl = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+            ms.Position = 0;
+
+            var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("productos", ms, archivo.Name, archivo.ContentType);
             if (exito)
             {
                 form.ImagenUrl = url;

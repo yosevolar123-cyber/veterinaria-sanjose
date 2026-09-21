@@ -9,4 +9,5 @@ public interface IUsuariosService
     Task<UsuarioAdminDto> GetByIdAsync(long id, CancellationToken cancellationToken);
     Task<UsuarioAdminDto> CrearAsync(CrearUsuarioRequest request, CancellationToken cancellationToken);
     Task<UsuarioAdminDto> ActualizarAsync(long id, ActualizarUsuarioRequest request, CancellationToken cancellationToken);
+    Task EliminarAsync(long id, CancellationToken cancellationToken);
 }

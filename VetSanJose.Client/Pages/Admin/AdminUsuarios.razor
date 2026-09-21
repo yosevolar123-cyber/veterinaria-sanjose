@@ -1,5 +1,7 @@
+@using System.Text.RegularExpressions
 @using VetSanJose.Shared.Usuarios
 @inject UsuariosApiClient UsuariosApiClient
+@inject IJSRuntime JsRuntime
 
 <div>
     <div class="mb-4 flex items-center justify-between">
@@ -44,6 +46,7 @@
                             </td>
                             <td class="py-2 text-right">
                                 <button class="text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(usuario)">Editar</button>
+                                <button class="ml-3 text-[var(--color-error)] hover:underline" @onclick="() => EliminarAsync(usuario)">Eliminar</button>
                             </td>
                         </tr>
                     }
@@ -60,15 +63,15 @@
     }
     <div class="space-y-3">
         <div class="grid grid-cols-2 gap-3">
-            <input class="campo-brutal" placeholder="Nombre" @bind="form.Nombre" />
-            <input class="campo-brutal" placeholder="Apellido" @bind="form.Apellido" />
+            <input class="campo-brutal" placeholder="Nombre" @bind="form.Nombre" @bind:event="oninput" pattern="[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+" title="Solo letras" />
+            <input class="campo-brutal" placeholder="Apellido" @bind="form.Apellido" @bind:event="oninput" pattern="[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+" title="Solo letras" />
         </div>
         <input type="email" class="w-full campo-brutal" placeholder="Correo" @bind="form.Email" disabled="@(editandoId is not null)" />
         @if (editandoId is null)
         {
             <input type="password" class="w-full campo-brutal" placeholder="Contraseña temporal" @bind="form.Password" />
         }
-        <input type="tel" class="w-full campo-brutal" placeholder="Teléfono (opcional)" @bind="form.Telefono" />
+        <input type="tel" class="w-full campo-brutal" placeholder="Teléfono (opcional)" @bind="form.Telefono" @bind:event="oninput" pattern="\+?[0-9]{7,15}" title="Solo números (7 a 15 dígitos), '+' opcional al inicio" />
         <select class="w-full campo-brutal" @bind="form.Rol">
             <option value="@Roles.Cliente">Cliente</option>
             <option value="@Roles.Doctor">Doctor</option>
@@ -143,9 +146,31 @@
         modalVisible = true;
     }
 
+    private static readonly Regex NombreRegex = new(@"^[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+$", RegexOptions.Compiled);
+    private static readonly Regex TelefonoRegex = new(@"^\+?[0-9]{7,15}$", RegexOptions.Compiled);
+
     private async Task GuardarAsync()
     {
         error = null;
+
+        if (!NombreRegex.IsMatch(form.Nombre.Trim()))
+        {
+            error = "El nombre solo puede contener letras.";
+            return;
+        }
+
+        if (!NombreRegex.IsMatch(form.Apellido.Trim()))
+        {
+            error = "El apellido solo puede contener letras.";
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(form.Telefono) && !TelefonoRegex.IsMatch(form.Telefono.Trim()))
+        {
+            error = "El teléfono solo puede contener números (7 a 15 dígitos), con un '+' opcional al inicio.";
+            return;
+        }
+
         guardando = true;
         try
         {
@@ -176,6 +201,22 @@
         {
             guardando = false;
         }
+    }
+
+    private async Task EliminarAsync(UsuarioAdminDto usuario)
+    {
+        var confirmado = await JsRuntime.InvokeAsync<bool>(
+            "confirm", $"¿Eliminar al usuario {usuario.Nombre} {usuario.Apellido}? Esta acción no se puede deshacer.");
+        if (!confirmado) return;
+
+        var response = await UsuariosApiClient.EliminarAsync(usuario.Id);
+        if (!response.IsSuccessStatusCode)
+        {
+            error = await response.LeerMensajeAsync();
+            return;
+        }
+
+        await CargarAsync();
     }
 
     private class FormModel
