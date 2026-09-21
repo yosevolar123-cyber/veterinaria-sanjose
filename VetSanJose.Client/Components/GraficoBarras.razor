@@ -1,0 +1,53 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="tarjeta p-4">
+    <h3 class="mb-3 text-base font-semibold text-slate-700">@Titulo</h3>
+    <div class="h-64">
+        <canvas id="@id"></canvas>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Titulo { get; set; } = "";
+    [Parameter, EditorRequired] public List<string> Etiquetas { get; set; } = [];
+    [Parameter, EditorRequired] public List<SerieGrafico> Series { get; set; } = [];
+
+    private readonly string id = $"grafico-{Guid.NewGuid():N}";
+    private IJSObjectReference? modulo;
+    private bool pendienteRender = true;
+
+    protected override void OnParametersSet() => pendienteRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            modulo = await JS.InvokeAsync<IJSObjectReference>("import", "./js/charts.js");
+        }
+
+        if (modulo is not null && pendienteRender && Etiquetas.Count > 0)
+        {
+            pendienteRender = false;
+            await modulo.InvokeVoidAsync("renderizarBarras", id, Etiquetas, Series);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (modulo is not null)
+        {
+            try
+            {
+                await modulo.InvokeVoidAsync("destruir", id);
+                await modulo.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // la conexión ya se cerró; el navegador libera el canvas junto con el DOM.
+            }
+        }
+    }
+
+    public record SerieGrafico(string Etiqueta, List<decimal> Datos, string Color);
+}

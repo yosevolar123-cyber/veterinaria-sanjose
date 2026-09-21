@@ -103,11 +103,15 @@
     {
         <AdminProveedores />
     }
+    else if (tab == Tab.Reportes)
+    {
+        <AdminReportes />
+    }
     </div>
 </div>
 
 @code {
-    private enum Tab { Dashboard, Usuarios, Productos, Categorias, Proveedores }
+    private enum Tab { Dashboard, Usuarios, Productos, Categorias, Proveedores, Reportes }
 
     private Tab tab = Tab.Dashboard;
     private AdminDashboardDto? dashboard;
@@ -135,6 +139,7 @@
         Tab.Productos => "Productos",
         Tab.Categorias => "Categorías",
         Tab.Proveedores => "Proveedores",
+        Tab.Reportes => "Reportes",
         _ => "",
     };
 }

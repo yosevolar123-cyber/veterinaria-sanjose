@@ -63,4 +63,7 @@ builder.Services.AddScoped<DashboardApiClient>(sp =>
 builder.Services.AddScoped<ArchivosApiClient>(sp =>
     new ArchivosApiClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Api")));
 
+builder.Services.AddScoped<ReportesApiClient>(sp =>
+    new ReportesApiClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Api")));
+
 await builder.Build().RunAsync();

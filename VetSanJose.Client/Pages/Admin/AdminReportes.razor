@@ -1,0 +1,138 @@
+@using VetSanJose.Shared.Reportes
+@inject ReportesApiClient ReportesApiClient
+@inject IJSRuntime JS
+
+<div class="mb-6 flex flex-wrap items-end gap-3">
+    <div>
+        <label class="mb-1 block text-sm text-gray-500">Desde</label>
+        <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="desde" @bind:after="CargarAsync" />
+    </div>
+    <div>
+        <label class="mb-1 block text-sm text-gray-500">Hasta</label>
+        <input type="date" class="rounded-xl border border-[var(--color-gris-borde)] px-3 py-2 text-sm" @bind="hasta" @bind:after="CargarAsync" />
+    </div>
+    <button class="btn-secundario" disabled="@(reporte is null || descargando)" @onclick="DescargarPdfAsync">
+        @(descargando ? "Generando PDF..." : "📄 Exportar PDF")
+    </button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+}
+
+@if (reporte is null)
+{
+    <div class="skeleton h-64"></div>
+}
+else
+{
+    <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard Icono="💰" Valor="@($"Bs {reporte.TotalIngresos:N2}")" Etiqueta="Ingresos del período" />
+        <StatCard Icono="🧾" Valor="@($"Bs {reporte.TotalCostos:N2}")" Etiqueta="Costos de insumos"
+                  FondoIcono="bg-amber-50" ColorValor="text-[var(--color-advertencia)]" />
+        <StatCard Icono="🧑‍🤝‍🧑" Valor="@reporte.TotalClientesAtendidos.ToString()" Etiqueta="Clientes atendidos" />
+        <StatCard Icono="🩺" Valor="@reporte.TotalConsultas.ToString()" Etiqueta="Consultas registradas" />
+    </div>
+
+    <div class="mb-8 grid gap-4 lg:grid-cols-2">
+        <GraficoBarras Titulo="Ingresos vs. costos por día" Etiquetas="etiquetas" Series="serieIngresosCostos" />
+        <GraficoBarras Titulo="Clientes atendidos por día" Etiquetas="etiquetas" Series="serieClientes" />
+    </div>
+
+    <div class="tarjeta overflow-hidden">
+        <div class="max-h-96 overflow-y-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="sticky top-0 bg-white">
+                    <tr class="border-b border-[var(--color-gris-borde)] text-gray-500">
+                        <th class="px-4 py-3">Fecha</th>
+                        <th class="px-4 py-3">Ingresos</th>
+                        <th class="px-4 py-3">Costos</th>
+                        <th class="px-4 py-3">Clientes</th>
+                        <th class="px-4 py-3">Consultas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <Virtualize Items="reporte.Items" Context="item" ItemSize="41">
+                        <tr class="border-b border-[var(--color-gris-borde)]">
+                            <td class="px-4 py-2.5">@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td class="px-4 py-2.5">Bs @item.Ingresos.ToString("N2")</td>
+                            <td class="px-4 py-2.5">Bs @item.Costos.ToString("N2")</td>
+                            <td class="px-4 py-2.5">@item.ClientesAtendidos</td>
+                            <td class="px-4 py-2.5">@item.Consultas</td>
+                        </tr>
+                    </Virtualize>
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private ReporteFinancieroDto? reporte;
+    private DateOnly? desde;
+    private DateOnly? hasta;
+    private string? error;
+    private bool descargando;
+
+    private List<string> etiquetas = [];
+    private List<GraficoBarras.SerieGrafico> serieIngresosCostos = [];
+    private List<GraficoBarras.SerieGrafico> serieClientes = [];
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        error = null;
+        try
+        {
+            reporte = await ReportesApiClient.GetFinancieroAsync(desde, hasta);
+            ConstruirSeries();
+        }
+        catch (HttpRequestException ex)
+        {
+            error = $"No se pudo cargar el reporte: {ex.Message}";
+        }
+    }
+
+    private void ConstruirSeries()
+    {
+        if (reporte is null)
+        {
+            return;
+        }
+
+        etiquetas = reporte.Items.Select(i => i.Fecha.ToString("dd/MM")).ToList();
+        serieIngresosCostos =
+        [
+            new GraficoBarras.SerieGrafico("Ingresos", reporte.Items.Select(i => i.Ingresos).ToList(), "#38bdf8"),
+            new GraficoBarras.SerieGrafico("Costos", reporte.Items.Select(i => i.Costos).ToList(), "#ef4444"),
+        ];
+        serieClientes =
+        [
+            new GraficoBarras.SerieGrafico("Clientes atendidos", reporte.Items.Select(i => (decimal)i.ClientesAtendidos).ToList(), "#22c55e"),
+        ];
+    }
+
+    private async Task DescargarPdfAsync()
+    {
+        descargando = true;
+        error = null;
+        try
+        {
+            var (exito, pdf, mensajeError) = await ReportesApiClient.DescargarFinancieroPdfAsync(desde, hasta);
+            if (!exito || pdf is null)
+            {
+                error = mensajeError ?? "No se pudo generar el PDF.";
+                return;
+            }
+
+            var nombreArchivo = $"reporte-financiero-{DateTime.Now:yyyyMMdd-HHmm}.pdf";
+            await JS.InvokeVoidAsync("vetSanJose.descargarArchivo", nombreArchivo, pdf, "application/pdf");
+        }
+        finally
+        {
+            descargando = false;
+        }
+    }
+}

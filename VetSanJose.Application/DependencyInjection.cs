@@ -8,6 +8,7 @@ using VetSanJose.Application.HistorialesMedicos;
 using VetSanJose.Application.Mascotas;
 using VetSanJose.Application.Productos;
 using VetSanJose.Application.Proveedores;
+using VetSanJose.Application.Reportes;
 using VetSanJose.Application.Usuarios;
 using VetSanJose.Application.Ventas;
 
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IUsuariosService, UsuariosService>();
         services.AddScoped<IVentasService, VentasService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IReportesService, ReportesService>();
 
         return services;
     }
