@@ -4,6 +4,7 @@
 @inject ProductosApiClient ProductosApiClient
 @inject CategoriasApiClient CategoriasApiClient
 @inject ProveedoresApiClient ProveedoresApiClient
+@inject ArchivosApiClient ArchivosApiClient
 
 <div>
     <div class="mb-4 flex items-center justify-between">
@@ -106,8 +107,18 @@
             </select>
         </div>
 
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="URL de la imagen (opcional)" @bind="form.ImagenUrl" />
-        <p class="text-xs text-gray-400">* No hay un endpoint de carga de archivos en el backend; se usa una URL de imagen directamente.</p>
+        <div>
+            <label class="mb-1 block text-xs text-gray-500">Imagen del producto (JPEG, PNG o WEBP, máx. 5 MB)</label>
+            <InputFile OnChange="SubirImagenAsync" accept="image/jpeg,image/png,image/webp" disabled="@subiendoImagen" />
+            @if (subiendoImagen)
+            {
+                <p class="mt-1 text-xs text-gray-400">Subiendo imagen...</p>
+            }
+            @if (!string.IsNullOrEmpty(errorImagen))
+            {
+                <p class="mt-1 text-xs text-[var(--color-error)]">@errorImagen</p>
+            }
+        </div>
 
         @if (!string.IsNullOrWhiteSpace(form.ImagenUrl))
         {
@@ -151,6 +162,11 @@
     private bool modalStockVisible;
     private ProductoDto? productoAjuste;
     private int ajusteCantidad;
+
+    private bool subiendoImagen;
+    private string? errorImagen;
+
+    private const long TamanoMaximoImagenBytes = 5 * 1024 * 1024;
 
     protected override async Task OnInitializedAsync()
     {
@@ -208,6 +224,36 @@
         {
             modalStockVisible = false;
             await CargarAsync();
+        }
+    }
+
+    private async Task SubirImagenAsync(InputFileChangeEventArgs e)
+    {
+        errorImagen = null;
+        var archivo = e.File;
+        if (archivo.Size > TamanoMaximoImagenBytes)
+        {
+            errorImagen = "El archivo supera el tamaño máximo permitido (5 MB).";
+            return;
+        }
+
+        subiendoImagen = true;
+        try
+        {
+            await using var stream = archivo.OpenReadStream(TamanoMaximoImagenBytes);
+            var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("productos", stream, archivo.Name, archivo.ContentType);
+            if (exito)
+            {
+                form.ImagenUrl = url;
+            }
+            else
+            {
+                errorImagen = error;
+            }
+        }
+        finally
+        {
+            subiendoImagen = false;
         }
     }
 

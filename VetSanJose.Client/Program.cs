@@ -60,4 +60,7 @@ builder.Services.AddScoped<VentasApiClient>(sp =>
 builder.Services.AddScoped<DashboardApiClient>(sp =>
     new DashboardApiClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Api")));
 
+builder.Services.AddScoped<ArchivosApiClient>(sp =>
+    new ArchivosApiClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Api")));
+
 await builder.Build().RunAsync();

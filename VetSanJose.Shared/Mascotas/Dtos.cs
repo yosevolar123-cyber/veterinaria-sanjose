@@ -9,6 +9,7 @@ public record MascotaDto(
     DateOnly? FechaNacimiento,
     string? Sexo,
     decimal? Peso,
+    string? FotoUrl,
     bool Activo);
 
 public record CrearMascotaRequest(
@@ -18,7 +19,8 @@ public record CrearMascotaRequest(
     string? Raza,
     DateOnly? FechaNacimiento,
     string? Sexo,
-    decimal? Peso);
+    decimal? Peso,
+    string? FotoUrl = null);
 
 public record ActualizarMascotaRequest(
     string Nombre,
@@ -27,4 +29,5 @@ public record ActualizarMascotaRequest(
     DateOnly? FechaNacimiento,
     string? Sexo,
     decimal? Peso,
-    bool Activo);
+    bool Activo,
+    string? FotoUrl = null);

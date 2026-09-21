@@ -19,6 +19,7 @@ public class MascotaConfiguration : IEntityTypeConfiguration<Mascota>
         builder.Property(m => m.FechaNacimiento).HasColumnName("fecha_nacimiento");
         builder.Property(m => m.Sexo).HasColumnName("sexo");
         builder.Property(m => m.Peso).HasColumnName("peso").HasColumnType("numeric(6,2)");
+        builder.Property(m => m.FotoUrl).HasColumnName("foto_url");
         builder.Property(m => m.Activo).HasColumnName("activo");
         builder.Property(m => m.CreatedAt).HasColumnName("created_at");
         builder.Property(m => m.UpdatedAt).HasColumnName("updated_at");

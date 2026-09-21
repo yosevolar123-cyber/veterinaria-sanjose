@@ -68,7 +68,7 @@
         {
             <input type="password" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Contraseña temporal" @bind="form.Password" />
         }
-        <input class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Teléfono (opcional)" @bind="form.Telefono" />
+        <input type="tel" class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" placeholder="Teléfono (opcional)" @bind="form.Telefono" />
         <select class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" @bind="form.Rol">
             <option value="@Roles.Cliente">Cliente</option>
             <option value="@Roles.Doctor">Doctor</option>

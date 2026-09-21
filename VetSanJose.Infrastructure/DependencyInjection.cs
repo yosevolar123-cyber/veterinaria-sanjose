@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VetSanJose.Application.Abstractions;
 using VetSanJose.Infrastructure.Persistence;
 using VetSanJose.Infrastructure.Security;
+using VetSanJose.Infrastructure.Storage;
 
 namespace VetSanJose.Infrastructure;
 
@@ -27,6 +28,27 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+        var supabaseUrl = configuration["Supabase:Url"]
+            ?? Environment.GetEnvironmentVariable("Supabase__Url")
+            ?? throw new InvalidOperationException("No se encontró la configuración 'Supabase:Url'.");
+        var supabaseServiceKey = configuration["Supabase:ServiceKey"]
+            ?? Environment.GetEnvironmentVariable("Supabase__ServiceKey")
+            ?? throw new InvalidOperationException("No se encontró la configuración 'Supabase:ServiceKey'.");
+
+        services.Configure<SupabaseStorageSettings>(options =>
+        {
+            configuration.GetSection(SupabaseStorageSettings.SectionName).Bind(options);
+            options.Url = supabaseUrl;
+            options.ServiceKey = supabaseServiceKey;
+        });
+
+        services.AddHttpClient<IStorageService, SupabaseStorageService>((sp, client) =>
+        {
+            client.BaseAddress = new Uri(supabaseUrl.TrimEnd('/') + "/");
+            client.DefaultRequestHeaders.Add("apikey", supabaseServiceKey);
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", supabaseServiceKey);
+        });
 
         return services;
     }

@@ -4,6 +4,7 @@
 @using VetSanJose.Shared.HistorialesMedicos
 @inject MascotasApiClient MascotasApiClient
 @inject HistorialMedicoApiClient HistorialApiClient
+@inject ArchivosApiClient ArchivosApiClient
 
 <PageTitle>Mascota — Veterinaria San José</PageTitle>
 
@@ -21,14 +22,31 @@
     else
     {
         <div class="tarjeta mb-8 flex items-center gap-4 p-6">
-            <span class="text-5xl">@(mascota.Especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")</span>
-            <div>
+            @if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+            {
+                <img src="@mascota.FotoUrl" class="h-16 w-16 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+            }
+            else
+            {
+                <span class="text-5xl">@(mascota.Especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")</span>
+            }
+            <div class="flex-1">
                 <h1 class="text-2xl">@mascota.Nombre</h1>
                 <p class="text-gray-500">@mascota.Especie @(string.IsNullOrWhiteSpace(mascota.Raza) ? "" : $"· {mascota.Raza}")</p>
                 @if (mascota.Peso is not null)
                 {
                     <p class="text-sm text-gray-400">Peso: @mascota.Peso kg</p>
                 }
+                <div class="mt-2">
+                    <label class="cursor-pointer text-xs text-[var(--color-celeste-intenso)] hover:underline">
+                        @(subiendoFoto ? "Subiendo foto..." : "Cambiar foto")
+                        <InputFile OnChange="SubirFotoAsync" accept="image/jpeg,image/png,image/webp" class="hidden" disabled="@subiendoFoto" />
+                    </label>
+                    @if (!string.IsNullOrEmpty(errorFoto))
+                    {
+                        <p class="text-xs text-[var(--color-error)]">@errorFoto</p>
+                    }
+                </div>
             </div>
         </div>
 
@@ -80,6 +98,11 @@
     private List<HistorialMedicoDto> historial = [];
     private bool cargando = true;
 
+    private bool subiendoFoto;
+    private string? errorFoto;
+
+    private const long TamanoMaximoFotoBytes = 5 * 1024 * 1024;
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -94,6 +117,43 @@
         finally
         {
             cargando = false;
+        }
+    }
+
+    private async Task SubirFotoAsync(InputFileChangeEventArgs e)
+    {
+        if (mascota is null) return;
+
+        errorFoto = null;
+        var archivo = e.File;
+        if (archivo.Size > TamanoMaximoFotoBytes)
+        {
+            errorFoto = "El archivo supera el tamaño máximo permitido (5 MB).";
+            return;
+        }
+
+        subiendoFoto = true;
+        try
+        {
+            await using var stream = archivo.OpenReadStream(TamanoMaximoFotoBytes);
+            var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("mascotas", stream, archivo.Name, archivo.ContentType);
+            if (!exito)
+            {
+                errorFoto = error;
+                return;
+            }
+
+            var actualizada = await MascotasApiClient.ActualizarAsync(mascota.Id, new ActualizarMascotaRequest(
+                mascota.Nombre, mascota.Especie, mascota.Raza, mascota.FechaNacimiento, mascota.Sexo, mascota.Peso, mascota.Activo, url));
+
+            if (actualizada is not null)
+            {
+                mascota = actualizada;
+            }
+        }
+        finally
+        {
+            subiendoFoto = false;
         }
     }
 }
