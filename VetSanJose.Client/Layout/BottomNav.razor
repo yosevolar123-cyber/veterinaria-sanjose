@@ -1,0 +1,57 @@
+@inject NavigationManager Navigation
+
+<nav class="fixed inset-x-0 bottom-0 z-40 flex h-16 border-t border-[var(--color-gris-borde)] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden"
+     aria-label="Navegación principal">
+    <NavLink href="" Match="NavLinkMatch.All" class="@ItemClass" ActiveClass="text-[var(--color-celeste-intenso)]">
+        <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11.5 12 4l9 7.5" />
+            <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" />
+        </svg>
+        <span class="text-[11px] font-medium">Inicio</span>
+    </NavLink>
+
+    <NavLink href="tienda" class="@ItemClass" ActiveClass="text-[var(--color-celeste-intenso)]">
+        <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 8h16l-1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 8Z" />
+            <path d="M8 8V6a4 4 0 0 1 8 0v2" />
+        </svg>
+        <span class="text-[11px] font-medium">Tienda</span>
+    </NavLink>
+
+    <AuthorizeView>
+        <Authorized>
+            <NavLink href="@RutaPanel(context)" class="@ItemClass" ActiveClass="text-[var(--color-celeste-intenso)]">
+                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+                </svg>
+                <span class="text-[11px] font-medium">Mi panel</span>
+            </NavLink>
+        </Authorized>
+        <NotAuthorized>
+            <NavLink href="contacto" class="@ItemClass" ActiveClass="text-[var(--color-celeste-intenso)]">
+                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="m4 6 8 6 8-6" />
+                </svg>
+                <span class="text-[11px] font-medium">Contacto</span>
+            </NavLink>
+        </NotAuthorized>
+    </AuthorizeView>
+</nav>
+
+@code {
+    private const string ItemClass = "flex flex-1 flex-col items-center justify-center gap-0.5 text-gray-500 transition-colors";
+
+    private static string RutaPanel(AuthenticationState context)
+    {
+        var rol = context.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        return rol switch
+        {
+            Roles.Doctor => "panel-doctor",
+            Roles.Secretaria => "panel-secretaria",
+            Roles.Administrador => "panel-admin",
+            _ => "mi-cuenta",
+        };
+    }
+}

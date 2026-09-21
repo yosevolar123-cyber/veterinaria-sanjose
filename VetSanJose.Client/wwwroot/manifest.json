@@ -1,0 +1,20 @@
+{
+  "name": "Veterinaria San José",
+  "short_name": "San José",
+  "description": "Gestión clínica y de citas para Veterinaria San José",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#0284c7",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
