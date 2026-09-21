@@ -1,0 +1,119 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<span class="inline-flex items-center gap-2">
+    <button type="button"
+            class="@ClaseBoton"
+            title="@Titulo"
+            disabled="@(!soportado)"
+            @onclick="AlternarAsync">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3" />
+            <path d="M5 10a7 7 0 0 0 14 0" />
+            <path d="M12 19v3" />
+        </svg>
+        @if (escuchando)
+        {
+            <span class="absolute -top-0.5 -end-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-white" aria-hidden="true"></span>
+        }
+    </button>
+    @if (!string.IsNullOrEmpty(errorMensaje))
+    {
+        <span class="text-xs text-[var(--color-error)]">@errorMensaje</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public EventCallback<string> OnTextoReconocido { get; set; }
+    [Parameter] public string Idioma { get; set; } = "es-BO";
+
+    private IJSObjectReference? modulo;
+    private DotNetObjectReference<MicrofonoDictado>? referencia;
+    private bool soportado = true;
+    private bool escuchando;
+    private string? errorMensaje;
+
+    private string ClaseBoton => "relative flex h-9 w-9 items-center justify-center rounded-full transition-colors " +
+        (escuchando
+            ? "bg-[var(--color-error)] text-white"
+            : "bg-[var(--color-celeste-suave)] text-[var(--color-celeste-intenso)] hover:bg-[var(--color-celeste)] hover:text-white") +
+        (soportado ? "" : " opacity-40 cursor-not-allowed");
+
+    private string Titulo => !soportado
+        ? "Dictado por voz no disponible en este navegador"
+        : escuchando ? "Detener dictado" : "Dictar por voz";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            modulo = await JS.InvokeAsync<IJSObjectReference>("import", "./js/speechRecognition.js");
+            soportado = await modulo.InvokeAsync<bool>("esSoportado");
+            StateHasChanged();
+        }
+    }
+
+    private async Task AlternarAsync()
+    {
+        if (modulo is null || !soportado)
+        {
+            return;
+        }
+
+        if (escuchando)
+        {
+            await modulo.InvokeVoidAsync("detener");
+            escuchando = false;
+            return;
+        }
+
+        errorMensaje = null;
+        referencia ??= DotNetObjectReference.Create(this);
+        escuchando = await modulo.InvokeAsync<bool>("iniciar", referencia, Idioma);
+    }
+
+    [JSInvokable]
+    public async Task OnTextoReconocidoJs(string texto)
+    {
+        await OnTextoReconocido.InvokeAsync(texto);
+    }
+
+    [JSInvokable]
+    public void OnErrorJs(string codigo)
+    {
+        escuchando = false;
+        errorMensaje = codigo switch
+        {
+            "not-allowed" or "service-not-allowed" => "Permiso de micrófono denegado.",
+            "no-speech" => "No se detectó voz.",
+            "network" => "Sin conexión para el dictado.",
+            _ => "No se pudo usar el dictado por voz.",
+        };
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnFinalizadoJs()
+    {
+        escuchando = false;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (modulo is not null)
+        {
+            try
+            {
+                await modulo.InvokeVoidAsync("detener");
+                await modulo.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // la conexión ya se cerró; nada que limpiar del lado del cliente.
+            }
+        }
+
+        referencia?.Dispose();
+    }
+}

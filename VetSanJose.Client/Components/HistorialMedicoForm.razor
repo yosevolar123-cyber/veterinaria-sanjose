@@ -15,9 +15,29 @@
         <p class="rounded-lg bg-green-50 px-3 py-2 text-sm text-[var(--color-exito)]">¡Historial guardado correctamente! 🐾</p>
     }
 
-    <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Diagnóstico" @bind="diagnostico"></textarea>
-    <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Tratamiento" @bind="tratamiento"></textarea>
-    <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Observaciones" @bind="observaciones"></textarea>
+    <div>
+        <div class="mb-1 flex items-center justify-between">
+            <label class="text-sm font-semibold text-gray-600">Diagnóstico</label>
+            <MicrofonoDictado OnTextoReconocido="TextoDictadoDiagnostico" />
+        </div>
+        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Diagnóstico" @bind="diagnostico"></textarea>
+    </div>
+
+    <div>
+        <div class="mb-1 flex items-center justify-between">
+            <label class="text-sm font-semibold text-gray-600">Tratamiento</label>
+            <MicrofonoDictado OnTextoReconocido="TextoDictadoTratamiento" />
+        </div>
+        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Tratamiento" @bind="tratamiento"></textarea>
+    </div>
+
+    <div>
+        <div class="mb-1 flex items-center justify-between">
+            <label class="text-sm font-semibold text-gray-600">Observaciones</label>
+            <MicrofonoDictado OnTextoReconocido="TextoDictadoObservaciones" />
+        </div>
+        <textarea class="w-full rounded-xl border border-[var(--color-gris-borde)] px-4 py-2.5" rows="2" placeholder="Observaciones" @bind="observaciones"></textarea>
+    </div>
 
     <div>
         <div class="mb-2 flex items-center justify-between">
@@ -74,6 +94,13 @@
     }
 
     private void AgregarInsumo() => insumos.Add(new InsumoItem());
+
+    private void TextoDictadoDiagnostico(string texto) => diagnostico = ConcatenarTexto(diagnostico, texto);
+    private void TextoDictadoTratamiento(string texto) => tratamiento = ConcatenarTexto(tratamiento, texto);
+    private void TextoDictadoObservaciones(string texto) => observaciones = ConcatenarTexto(observaciones, texto);
+
+    private static string ConcatenarTexto(string actual, string nuevo) =>
+        string.IsNullOrWhiteSpace(actual) ? nuevo : $"{actual.TrimEnd()} {nuevo}";
 
     private async Task GuardarAsync()
     {
