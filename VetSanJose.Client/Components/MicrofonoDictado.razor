@@ -26,6 +26,7 @@
 @code {
     [Parameter, EditorRequired] public EventCallback<string> OnTextoReconocido { get; set; }
     [Parameter] public string Idioma { get; set; } = "es-BO";
+    [Parameter] public string? TituloPersonalizado { get; set; }
 
     private IJSObjectReference? modulo;
     private DotNetObjectReference<MicrofonoDictado>? referencia;
@@ -41,7 +42,7 @@
 
     private string Titulo => !soportado
         ? "Dictado por voz no disponible en este navegador"
-        : escuchando ? "Detener dictado" : "Dictar por voz";
+        : escuchando ? "Detener dictado" : (TituloPersonalizado ?? "Dictar por voz");
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

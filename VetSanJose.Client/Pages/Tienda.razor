@@ -1,4 +1,5 @@
 @page "/tienda"
+@using VetSanJose.Client.Components
 @inject ProductosApiClient ProductosApiClient
 @inject CategoriasApiClient CategoriasApiClient
 @inject CartService Cart
@@ -22,6 +23,18 @@
         <button class="btn-secundario" @onclick="() => carritoAbierto = true">
             🛒 Carrito (@Cart.CantidadTotal)
         </button>
+    </div>
+
+    <div class="mb-6 flex items-center gap-2">
+        <div class="relative flex-1">
+            <svg viewBox="0 0 24 24" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input class="w-full campo-brutal pl-9" placeholder="Buscar productos... (ej. 'shampoo para perro')"
+                   @bind="busqueda" @bind:event="oninput" />
+        </div>
+        <MicrofonoDictado TituloPersonalizado="Buscar por voz" OnTextoReconocido="OnBusquedaPorVoz" />
     </div>
 
     <div class="mb-8 flex flex-wrap gap-2">
@@ -51,14 +64,18 @@
     {
         <p class="py-12 text-center text-[var(--color-error)]">@error</p>
     }
-    else if (productos.Count == 0)
+    else if (productosFiltrados.Count == 0)
     {
-        <p class="py-12 text-center text-gray-400">Aún no hay productos disponibles en esta categoría 🐾</p>
+        <p class="py-12 text-center text-gray-400">
+            @(string.IsNullOrWhiteSpace(busqueda)
+                ? "Aún no hay productos disponibles en esta categoría 🐾"
+                : $"No encontramos productos para \"{busqueda}\" 🐾")
+        </p>
     }
     else
     {
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach (var (producto, indice) in productos.Select((p, i) => (p, i)))
+            @foreach (var (producto, indice) in productosFiltrados.Select((p, i) => (p, i)))
             {
                 <div class="tarjeta-producto overflow-hidden" data-aos="fade-up" data-aos-delay="@(indice % 6 * 80)">
                     <div class="h-44 overflow-hidden bg-[var(--color-celeste-suave)]">
@@ -124,8 +141,22 @@
     private long? categoriaSeleccionada;
     private bool cargando = true;
     private bool carritoAbierto;
+    private string busqueda = "";
 
     private string? error;
+
+    private List<VetSanJose.Shared.Productos.ProductoTiendaDto> productosFiltrados =>
+        string.IsNullOrWhiteSpace(busqueda)
+            ? productos
+            : productos.Where(p =>
+                (p.Nombre?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.Descripcion?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+
+    private void OnBusquedaPorVoz(string texto)
+    {
+        busqueda = texto;
+    }
 
     protected override async Task OnInitializedAsync()
     {
