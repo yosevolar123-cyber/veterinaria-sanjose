@@ -74,9 +74,9 @@
                 <div class="tarjeta p-5">
                     <div class="mb-1 flex items-center justify-between">
                         <h3 class="text-lg">@mascota.Nombre</h3>
-                        @if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+                        @if (!string.IsNullOrWhiteSpace(mascota.ImagenUrl))
                         {
-                            <img src="@mascota.FotoUrl" class="h-8 w-8 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+                            <img src="@mascota.ImagenUrl" class="h-8 w-8 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
                         }
                         else
                         {
@@ -150,7 +150,7 @@
             var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("mascotas", ms, archivo.Name, archivo.ContentType);
             if (exito)
             {
-                nuevaMascota.FotoUrl = url;
+                nuevaMascota.ImagenUrl = url;
             }
             else
             {
@@ -167,7 +167,7 @@
     {
         await MascotasApiClient.CrearAsync(new CrearMascotaRequest(
             null, nuevaMascota.Nombre, nuevaMascota.Especie, nuevaMascota.Raza, null,
-            string.IsNullOrWhiteSpace(nuevaMascota.Sexo) ? null : nuevaMascota.Sexo, null, nuevaMascota.FotoUrl));
+            string.IsNullOrWhiteSpace(nuevaMascota.Sexo) ? null : nuevaMascota.Sexo, null, nuevaMascota.ImagenUrl));
 
         nuevaMascota = new();
         errorFoto = null;
@@ -182,6 +182,6 @@
         public string Especie { get; set; } = "";
         public string? Raza { get; set; }
         public string? Sexo { get; set; }
-        public string? FotoUrl { get; set; }
+        public string? ImagenUrl { get; set; }
     }
 }

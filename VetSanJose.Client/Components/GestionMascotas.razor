@@ -27,9 +27,9 @@
             @foreach (var mascota in mascotas)
             {
                 <li class="flex items-center gap-3 rounded-xl border border-[var(--color-gris-borde)] p-3">
-                    @if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+                    @if (!string.IsNullOrWhiteSpace(mascota.ImagenUrl))
                     {
-                        <img src="@mascota.FotoUrl" class="h-10 w-10 shrink-0 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+                        <img src="@mascota.ImagenUrl" class="h-10 w-10 shrink-0 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
                     }
                     else
                     {
@@ -58,9 +58,9 @@
 
     <div class="space-y-3">
         <div class="flex items-center gap-3">
-            @if (!string.IsNullOrWhiteSpace(form.FotoUrl))
+            @if (!string.IsNullOrWhiteSpace(form.ImagenUrl))
             {
-                <img src="@form.FotoUrl" class="h-16 w-16 shrink-0 rounded-full object-cover" alt="Foto de la mascota" />
+                <img src="@form.ImagenUrl" class="h-16 w-16 shrink-0 rounded-full object-cover" alt="Foto de la mascota" />
             }
             else
             {
@@ -163,7 +163,7 @@
             Raza = mascota.Raza,
             Sexo = mascota.Sexo ?? "",
             Peso = mascota.Peso,
-            FotoUrl = mascota.FotoUrl,
+            ImagenUrl = mascota.ImagenUrl,
             FechaNacimiento = mascota.FechaNacimiento,
             Activo = mascota.Activo,
         };
@@ -200,7 +200,7 @@
 
             if (exito)
             {
-                form.FotoUrl = url;
+                form.ImagenUrl = url;
             }
             else
             {
@@ -231,12 +231,12 @@
             if (editandoId is null)
             {
                 await MascotasApiClient.CrearAsync(new CrearMascotaRequest(
-                    ClienteId, form.Nombre, form.Especie, form.Raza, form.FechaNacimiento, sexo, form.Peso, form.FotoUrl));
+                    ClienteId, form.Nombre, form.Especie, form.Raza, form.FechaNacimiento, sexo, form.Peso, form.ImagenUrl));
             }
             else
             {
                 await MascotasApiClient.ActualizarAsync(editandoId.Value, new ActualizarMascotaRequest(
-                    form.Nombre, form.Especie, form.Raza, form.FechaNacimiento, sexo, form.Peso, form.Activo, form.FotoUrl));
+                    form.Nombre, form.Especie, form.Raza, form.FechaNacimiento, sexo, form.Peso, form.Activo, form.ImagenUrl));
             }
 
             modalVisible = false;
@@ -262,7 +262,7 @@
         public string? Raza { get; set; }
         public string Sexo { get; set; } = "";
         public decimal? Peso { get; set; }
-        public string? FotoUrl { get; set; }
+        public string? ImagenUrl { get; set; }
         public DateOnly? FechaNacimiento { get; set; }
         public bool Activo { get; set; } = true;
     }

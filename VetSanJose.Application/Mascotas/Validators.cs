@@ -14,7 +14,7 @@ public class CrearMascotaRequestValidator : AbstractValidator<CrearMascotaReques
         RuleFor(x => x.Sexo).Must(s => s is null || s is "macho" or "hembra")
             .WithMessage("Sexo debe ser 'macho' o 'hembra'.");
         RuleFor(x => x.Peso).GreaterThan(0).When(x => x.Peso.HasValue);
-        RuleFor(x => x.FotoUrl).MaximumLength(2048);
+        RuleFor(x => x.ImagenUrl).MaximumLength(2048);
     }
 }
 
@@ -28,6 +28,6 @@ public class ActualizarMascotaRequestValidator : AbstractValidator<ActualizarMas
         RuleFor(x => x.Sexo).Must(s => s is null || s is "macho" or "hembra")
             .WithMessage("Sexo debe ser 'macho' o 'hembra'.");
         RuleFor(x => x.Peso).GreaterThan(0).When(x => x.Peso.HasValue);
-        RuleFor(x => x.FotoUrl).MaximumLength(2048);
+        RuleFor(x => x.ImagenUrl).MaximumLength(2048);
     }
 }

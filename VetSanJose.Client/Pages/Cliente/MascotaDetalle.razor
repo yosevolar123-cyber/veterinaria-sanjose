@@ -26,9 +26,9 @@
             {
                 <img src="@fotoPreviewUrl" class="h-16 w-16 rounded-full border-2 border-dashed border-[var(--color-celeste-intenso)] object-cover" alt="Vista previa de la foto" />
             }
-            else if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+            else if (!string.IsNullOrWhiteSpace(mascota.ImagenUrl))
             {
-                <img src="@mascota.FotoUrl" class="h-16 w-16 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+                <img src="@mascota.ImagenUrl" class="h-16 w-16 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
             }
             else
             {

@@ -85,26 +85,38 @@ public class ReportesService(IAppDbContext db) : IReportesService
         var ventasMonto = await ventasDelMes.SumAsync(v => (decimal?)v.Total, cancellationToken) ?? 0m;
 
         // Agregación en la base: se agrupa detalle_ventas por producto y sólo vuelven las filas resumidas.
-        var vendidos = await db.DetallesVenta
+        // La proyección intermedia es anónima a propósito: EF no puede ordenar por una propiedad de un
+        // record proyectado desde un GroupBy (no la reconoce como el agregado) y tira el query al cliente.
+        var vendidosAgrupados = await db.DetallesVenta
             .Where(d => d.Venta.Estado == EstadosVenta.Completada && d.Venta.Fecha >= inicio && d.Venta.Fecha < fin)
             .GroupBy(d => new { d.ProductoId, d.Producto.Nombre })
-            .Select(g => new ProductoVendidoDto(
+            .Select(g => new
+            {
                 g.Key.ProductoId,
                 g.Key.Nombre,
-                g.Sum(d => d.Cantidad),
-                g.Sum(d => d.Subtotal)))
-            .OrderByDescending(p => p.CantidadVendida)
+                Cantidad = g.Sum(d => d.Cantidad),
+                Total = g.Sum(d => d.Subtotal),
+            })
+            .OrderByDescending(x => x.Cantidad)
             .ToListAsync(cancellationToken);
+
+        var vendidos = vendidosAgrupados
+            .Select(x => new ProductoVendidoDto(x.ProductoId, x.Nombre, x.Cantidad, x.Total))
+            .ToList();
 
         var productosVendibles = db.Productos.Where(p => p.Activo && p.Tipo == TiposProducto.VentaPublico);
 
         var idsVendidos = vendidos.Select(p => p.ProductoId).ToList();
 
-        var sinVentas = await productosVendibles
+        var sinVentasAgrupados = await productosVendibles
             .Where(p => !idsVendidos.Contains(p.Id))
             .OrderBy(p => p.Nombre)
-            .Select(p => new ProductoVendidoDto(p.Id, p.Nombre, 0, 0m))
+            .Select(p => new { p.Id, p.Nombre })
             .ToListAsync(cancellationToken);
+
+        var sinVentas = sinVentasAgrupados
+            .Select(p => new ProductoVendidoDto(p.Id, p.Nombre, 0, 0m))
+            .ToList();
 
         // "Menos vendido" es un producto sin ventas si lo hay; si todos vendieron, el de menor cantidad.
         var menosVendido = sinVentas.FirstOrDefault() ?? vendidos.LastOrDefault();

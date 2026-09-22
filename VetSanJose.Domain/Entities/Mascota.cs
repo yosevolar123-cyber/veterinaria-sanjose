@@ -10,7 +10,7 @@ public class Mascota
     public DateOnly? FechaNacimiento { get; set; }
     public string? Sexo { get; set; }
     public decimal? Peso { get; set; }
-    public string? FotoUrl { get; set; }
+    public string? ImagenUrl { get; set; }
     public bool Activo { get; set; } = true;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

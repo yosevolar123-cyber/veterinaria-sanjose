@@ -1,9 +1,9 @@
 @using VetSanJose.Shared.Mascotas
 
 <div class="tarjeta flex items-center gap-4 p-5">
-    @if (!string.IsNullOrWhiteSpace(Mascota.FotoUrl))
+    @if (!string.IsNullOrWhiteSpace(Mascota.ImagenUrl))
     {
-        <img src="@Mascota.FotoUrl" class="h-20 w-20 shrink-0 rounded-full object-cover" alt="Foto de @Mascota.Nombre" />
+        <img src="@Mascota.ImagenUrl" class="h-20 w-20 shrink-0 rounded-full object-cover" alt="Foto de @Mascota.Nombre" />
     }
     else
     {
