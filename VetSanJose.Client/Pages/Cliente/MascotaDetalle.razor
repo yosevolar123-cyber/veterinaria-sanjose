@@ -171,7 +171,15 @@
             if (actualizada is not null)
             {
                 mascota = actualizada;
+                // Se descarta la vista previa local para que la ficha pase a mostrar la URL ya
+                // persistida: así lo que se ve es exactamente lo que quedó guardado.
+                fotoPreviewUrl = null;
             }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            fotoPreviewUrl = null;
+            errorFoto = $"No se pudo guardar la foto: {ex.Message}";
         }
         finally
         {
