@@ -1,7 +1,9 @@
 @page "/panel-admin"
 @attribute [Authorize(Roles = Roles.Administrador)]
 @using VetSanJose.Shared.Dashboard
+@using VetSanJose.Shared.Usuarios
 @inject DashboardApiClient DashboardApiClient
+@inject UsuariosApiClient UsuariosApiClient
 
 <PageTitle>Panel Administrador — Veterinaria San José</PageTitle>
 
@@ -91,6 +93,30 @@
     {
         <AdminUsuarios />
     }
+    else if (tab == Tab.Mascotas)
+    {
+        <div class="tarjeta mb-6 p-6">
+            <label class="mb-1 block text-sm text-gray-500">Cliente</label>
+            <select class="w-full campo-brutal sm:w-96" @bind="clienteSeleccionado">
+                <option value="0">Selecciona un cliente</option>
+                @foreach (var cliente in clientes)
+                {
+                    <option value="@cliente.Id">@cliente.Nombre @cliente.Apellido — @cliente.Email</option>
+                }
+            </select>
+        </div>
+
+        @if (clienteSeleccionado > 0)
+        {
+            <div class="tarjeta p-6">
+                <GestionMascotas @key="clienteSeleccionado" ClienteId="clienteSeleccionado" />
+            </div>
+        }
+        else
+        {
+            <p class="py-8 text-center text-gray-400">Selecciona un cliente para ver y editar sus mascotas.</p>
+        }
+    }
     else if (tab == Tab.Productos)
     {
         <AdminProductos />
@@ -111,14 +137,29 @@
 </div>
 
 @code {
-    private enum Tab { Dashboard, Usuarios, Productos, Categorias, Proveedores, Reportes }
+    private enum Tab { Dashboard, Usuarios, Mascotas, Productos, Categorias, Proveedores, Reportes }
 
     private Tab tab = Tab.Dashboard;
     private AdminDashboardDto? dashboard;
     private DateOnly? desde;
     private DateOnly? hasta;
 
-    protected override Task OnInitializedAsync() => CargarDashboardAsync();
+    private List<UsuarioAdminDto> clientes = [];
+    private long clienteSeleccionado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDashboardAsync();
+
+        try
+        {
+            clientes = await UsuariosApiClient.GetAllAsync("cliente", soloActivos: true);
+        }
+        catch (HttpRequestException)
+        {
+            clientes = [];
+        }
+    }
 
     private async Task CargarDashboardAsync()
     {
@@ -136,6 +177,7 @@
     {
         Tab.Dashboard => "Dashboard",
         Tab.Usuarios => "Usuarios",
+        Tab.Mascotas => "Mascotas",
         Tab.Productos => "Productos",
         Tab.Categorias => "Categorías",
         Tab.Proveedores => "Proveedores",

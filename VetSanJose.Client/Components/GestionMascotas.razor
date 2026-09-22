@@ -1,0 +1,269 @@
+@using VetSanJose.Shared.Mascotas
+@inject MascotasApiClient MascotasApiClient
+@inject ArchivosApiClient ArchivosApiClient
+
+<div>
+    <div class="mb-3 flex items-center justify-between">
+        <h4 class="font-semibold">Mascotas</h4>
+        <button class="text-sm text-[var(--color-celeste-intenso)] hover:underline" @onclick="AbrirCrear">+ Nueva mascota</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
+    }
+
+    @if (cargando)
+    {
+        <div class="skeleton h-16"></div>
+    }
+    else if (mascotas.Count == 0)
+    {
+        <p class="text-sm text-gray-400">Sin mascotas registradas.</p>
+    }
+    else
+    {
+        <ul class="space-y-2">
+            @foreach (var mascota in mascotas)
+            {
+                <li class="flex items-center gap-3 rounded-xl border border-[var(--color-gris-borde)] p-3">
+                    @if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+                    {
+                        <img src="@mascota.FotoUrl" class="h-10 w-10 shrink-0 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+                    }
+                    else
+                    {
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-celeste-suave)] text-xl">
+                            @IconoEspecie(mascota.Especie)
+                        </span>
+                    }
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-semibold">@mascota.Nombre</p>
+                        <p class="truncate text-xs text-gray-400">
+                            @mascota.Especie @(string.IsNullOrWhiteSpace(mascota.Raza) ? "" : $"· {mascota.Raza}")
+                        </p>
+                    </div>
+                    <button class="text-sm text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(mascota)">Editar</button>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<ModalShell @bind-Visible="modalVisible" Titulo="@(editandoId is null ? "Nueva mascota" : "Editar mascota")">
+    @if (!string.IsNullOrEmpty(errorFormulario))
+    {
+        <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@errorFormulario</p>
+    }
+
+    <div class="space-y-3">
+        <div class="flex items-center gap-3">
+            @if (!string.IsNullOrWhiteSpace(form.FotoUrl))
+            {
+                <img src="@form.FotoUrl" class="h-16 w-16 shrink-0 rounded-full object-cover" alt="Foto de la mascota" />
+            }
+            else
+            {
+                <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--color-celeste-suave)] text-3xl">
+                    @IconoEspecie(form.Especie)
+                </span>
+            }
+            <div class="flex-1">
+                <label class="mb-1 block text-xs text-gray-500">Foto (JPEG, PNG, WEBP o GIF, máx. 10 MB)</label>
+                <InputFile OnChange="SubirFotoAsync" accept="image/*" disabled="@subiendoFoto" />
+                @if (subiendoFoto)
+                {
+                    <p class="mt-1 text-xs text-gray-400">Subiendo foto...</p>
+                }
+                @if (!string.IsNullOrEmpty(errorFoto))
+                {
+                    <p class="mt-1 text-xs text-[var(--color-error)]">@errorFoto</p>
+                }
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <input class="campo-brutal" placeholder="Nombre" @bind="form.Nombre" />
+            <input class="campo-brutal" placeholder="Especie (perro, gato...)" @bind="form.Especie" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <input class="campo-brutal" placeholder="Raza (opcional)" @bind="form.Raza" />
+            <select class="campo-brutal" @bind="form.Sexo">
+                <option value="">Sexo (opcional)</option>
+                <option value="macho">Macho</option>
+                <option value="hembra">Hembra</option>
+            </select>
+        </div>
+        <input type="number" step="0.01" min="0" class="w-full campo-brutal" placeholder="Peso en kg (opcional)" @bind="form.Peso" />
+
+        <button class="btn-primario w-full" disabled="@(guardando || subiendoFoto)" @onclick="GuardarAsync">
+            @(guardando ? "Guardando..." : "Guardar mascota")
+        </button>
+    </div>
+</ModalShell>
+
+@code {
+    [Parameter, EditorRequired] public long ClienteId { get; set; }
+
+    private List<MascotaDto> mascotas = [];
+    private bool cargando = true;
+    private string? error;
+
+    private bool modalVisible;
+    private long? editandoId;
+    private bool guardando;
+    private string? errorFormulario;
+    private FormModel form = new();
+
+    private bool subiendoFoto;
+    private string? errorFoto;
+
+    private const long TamanoMaximoFotoBytes = 10 * 1024 * 1024;
+    private static readonly HashSet<string> ContentTypesPermitidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif",
+    };
+
+    protected override Task OnParametersSetAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        error = null;
+        try
+        {
+            mascotas = await MascotasApiClient.GetPorClienteAsync(ClienteId);
+        }
+        catch (HttpRequestException ex)
+        {
+            error = $"No se pudieron cargar las mascotas: {ex.Message}";
+            mascotas = [];
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void AbrirCrear()
+    {
+        editandoId = null;
+        form = new FormModel();
+        errorFormulario = errorFoto = null;
+        modalVisible = true;
+    }
+
+    private void AbrirEditar(MascotaDto mascota)
+    {
+        editandoId = mascota.Id;
+        form = new FormModel
+        {
+            Nombre = mascota.Nombre,
+            Especie = mascota.Especie,
+            Raza = mascota.Raza,
+            Sexo = mascota.Sexo ?? "",
+            Peso = mascota.Peso,
+            FotoUrl = mascota.FotoUrl,
+            FechaNacimiento = mascota.FechaNacimiento,
+            Activo = mascota.Activo,
+        };
+        errorFormulario = errorFoto = null;
+        modalVisible = true;
+    }
+
+    private async Task SubirFotoAsync(InputFileChangeEventArgs e)
+    {
+        errorFoto = null;
+        var archivo = e.File;
+
+        if (!ContentTypesPermitidos.Contains(archivo.ContentType))
+        {
+            errorFoto = "Formato no soportado. Usa una imagen JPEG, PNG, WEBP o GIF.";
+            return;
+        }
+
+        if (archivo.Size > TamanoMaximoFotoBytes)
+        {
+            errorFoto = "El archivo supera el tamaño máximo permitido (10 MB).";
+            return;
+        }
+
+        subiendoFoto = true;
+        try
+        {
+            using var ms = new MemoryStream();
+            await archivo.OpenReadStream(TamanoMaximoFotoBytes).CopyToAsync(ms);
+            ms.Position = 0;
+
+            var (exito, url, errorSubida) = await ArchivosApiClient.SubirImagenAsync(
+                "mascotas", ms, archivo.Name, archivo.ContentType);
+
+            if (exito)
+            {
+                form.FotoUrl = url;
+            }
+            else
+            {
+                errorFoto = errorSubida;
+            }
+        }
+        finally
+        {
+            subiendoFoto = false;
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        errorFormulario = null;
+
+        if (string.IsNullOrWhiteSpace(form.Nombre) || string.IsNullOrWhiteSpace(form.Especie))
+        {
+            errorFormulario = "El nombre y la especie son obligatorios.";
+            return;
+        }
+
+        guardando = true;
+        try
+        {
+            var sexo = string.IsNullOrWhiteSpace(form.Sexo) ? null : form.Sexo;
+
+            if (editandoId is null)
+            {
+                await MascotasApiClient.CrearAsync(new CrearMascotaRequest(
+                    ClienteId, form.Nombre, form.Especie, form.Raza, form.FechaNacimiento, sexo, form.Peso, form.FotoUrl));
+            }
+            else
+            {
+                await MascotasApiClient.ActualizarAsync(editandoId.Value, new ActualizarMascotaRequest(
+                    form.Nombre, form.Especie, form.Raza, form.FechaNacimiento, sexo, form.Peso, form.Activo, form.FotoUrl));
+            }
+
+            modalVisible = false;
+            await CargarAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            errorFormulario = $"No se pudo guardar la mascota: {ex.Message}";
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private static string IconoEspecie(string? especie) =>
+        especie is not null && especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶";
+
+    private class FormModel
+    {
+        public string Nombre { get; set; } = "";
+        public string Especie { get; set; } = "";
+        public string? Raza { get; set; }
+        public string Sexo { get; set; } = "";
+        public decimal? Peso { get; set; }
+        public string? FotoUrl { get; set; }
+        public DateOnly? FechaNacimiento { get; set; }
+        public bool Activo { get; set; } = true;
+    }
+}

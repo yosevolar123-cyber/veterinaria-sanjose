@@ -2,6 +2,100 @@
 @inject ReportesApiClient ReportesApiClient
 @inject IJSRuntime JS
 
+<section class="mb-10">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <h3 class="text-xl">Resumen del mes</h3>
+        <input type="month" class="campo-brutal-sm" value="@mesSeleccionado" @onchange="CambiarMesAsync" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorNegocio))
+    {
+        <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@errorNegocio</p>
+    }
+
+    @if (negocio is null)
+    {
+        <div class="skeleton h-40"></div>
+    }
+    else
+    {
+        <div class="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard Icono="🛒" Valor="@($"Bs {negocio.VentasMontoTotal:N2}")"
+                      Etiqueta="@($"Ventas del mes ({negocio.VentasCantidad} ventas)")" />
+            <StatCard Icono="📦" Valor="@negocio.StockTotalUnidades.ToString()" Etiqueta="Unidades en inventario" />
+            <StatCard Icono="⚠️" Valor="@negocio.ProductosConStockBajo.ToString()"
+                      Etiqueta="@($"Productos con stock bajo (≤ {negocio.UmbralStockBajo})")"
+                      FondoIcono="bg-amber-50" ColorValor="text-[var(--color-advertencia)]" />
+            <StatCard Icono="🏷️" Valor="@($"Bs {negocio.ValorTotalInventario:N2}")" Etiqueta="Valor total del inventario" />
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="tarjeta p-5">
+                <p class="mb-1 text-sm text-gray-500">🥇 Producto más vendido del mes</p>
+                @if (negocio.ProductoMasVendido is null)
+                {
+                    <p class="text-gray-400">Sin ventas registradas este mes.</p>
+                }
+                else
+                {
+                    <p class="text-lg font-semibold">@negocio.ProductoMasVendido.Nombre</p>
+                    <p class="text-sm text-gray-500">
+                        @negocio.ProductoMasVendido.CantidadVendida unidades · Bs @negocio.ProductoMasVendido.MontoVendido.ToString("N2")
+                    </p>
+                }
+            </div>
+
+            <div class="tarjeta p-5">
+                <p class="mb-1 text-sm text-gray-500">🐢 Producto menos vendido del mes</p>
+                @if (negocio.ProductoMenosVendido is null)
+                {
+                    <p class="text-gray-400">Sin productos para comparar.</p>
+                }
+                else
+                {
+                    <p class="text-lg font-semibold">@negocio.ProductoMenosVendido.Nombre</p>
+                    <p class="text-sm text-gray-500">
+                        @negocio.ProductoMenosVendido.CantidadVendida unidades · Bs @negocio.ProductoMenosVendido.MontoVendido.ToString("N2")
+                    </p>
+                    @if (negocio.ProductosSinVentasEnElMes > 0)
+                    {
+                        <p class="mt-1 text-xs text-gray-400">
+                            @negocio.ProductosSinVentasEnElMes producto(s) activos no registraron ventas este mes.
+                        </p>
+                    }
+                }
+            </div>
+        </div>
+
+        @if (negocio.TopProductos.Count > 0)
+        {
+            <div class="tarjeta mt-4 overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-[var(--color-gris-borde)] text-gray-500">
+                            <th class="px-4 py-3">Producto</th>
+                            <th class="px-4 py-3">Unidades</th>
+                            <th class="px-4 py-3">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in negocio.TopProductos)
+                        {
+                            <tr class="border-b border-[var(--color-gris-borde)]">
+                                <td class="px-4 py-2.5">@item.Nombre</td>
+                                <td class="px-4 py-2.5">@item.CantidadVendida</td>
+                                <td class="px-4 py-2.5">Bs @item.MontoVendido.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</section>
+
+<h3 class="mb-4 text-xl">Detalle financiero por período</h3>
+
 <div class="mb-6 flex flex-wrap items-end gap-3">
     <div>
         <label class="mb-1 block text-sm text-gray-500">Desde</label>
@@ -79,7 +173,39 @@ else
     private List<GraficoBarras.SerieGrafico> serieIngresosCostos = [];
     private List<GraficoBarras.SerieGrafico> serieClientes = [];
 
-    protected override Task OnInitializedAsync() => CargarAsync();
+    private ReporteNegocioMesDto? negocio;
+    private string mesSeleccionado = DateTime.Now.ToString("yyyy-MM");
+    private string? errorNegocio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+        await CargarNegocioAsync();
+    }
+
+    private async Task CambiarMesAsync(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(valor)) return;
+
+        mesSeleccionado = valor;
+        negocio = null;
+        await CargarNegocioAsync();
+    }
+
+    private async Task CargarNegocioAsync()
+    {
+        errorNegocio = null;
+        try
+        {
+            var partes = mesSeleccionado.Split('-');
+            negocio = await ReportesApiClient.GetNegocioMesAsync(int.Parse(partes[0]), int.Parse(partes[1]));
+        }
+        catch (Exception ex) when (ex is HttpRequestException or FormatException)
+        {
+            errorNegocio = $"No se pudo cargar el resumen del mes: {ex.Message}";
+        }
+    }
 
     private async Task CargarAsync()
     {

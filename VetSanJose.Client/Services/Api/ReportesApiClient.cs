@@ -10,6 +10,16 @@ public class ReportesApiClient(HttpClient http)
         return await http.GetFromJsonAsync<ReporteFinancieroDto>("api/reportes/financiero" + ConstruirQuery(desde, hasta));
     }
 
+    public async Task<ReporteNegocioMesDto?> GetNegocioMesAsync(int? anio = null, int? mes = null)
+    {
+        var filtros = new List<string>();
+        if (anio.HasValue) filtros.Add($"anio={anio}");
+        if (mes.HasValue) filtros.Add($"mes={mes}");
+        var query = filtros.Count > 0 ? "?" + string.Join("&", filtros) : "";
+
+        return await http.GetFromJsonAsync<ReporteNegocioMesDto>("api/reportes/negocio-mes" + query);
+    }
+
     public async Task<(bool Exito, byte[]? Pdf, string? Error)> DescargarFinancieroPdfAsync(DateOnly? desde = null, DateOnly? hasta = null)
     {
         var response = await http.GetAsync("api/reportes/financiero/pdf" + ConstruirQuery(desde, hasta));

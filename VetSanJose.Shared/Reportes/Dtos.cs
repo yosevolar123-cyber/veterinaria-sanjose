@@ -15,3 +15,23 @@ public record ReporteFinancieroDto(
     decimal TotalCostos,
     int TotalClientesAtendidos,
     int TotalConsultas);
+
+public record ProductoVendidoDto(
+    long ProductoId,
+    string Nombre,
+    int CantidadVendida,
+    decimal MontoVendido);
+
+public record ReporteNegocioMesDto(
+    int Anio,
+    int Mes,
+    decimal VentasMontoTotal,
+    int VentasCantidad,
+    ProductoVendidoDto? ProductoMasVendido,
+    ProductoVendidoDto? ProductoMenosVendido,
+    int ProductosSinVentasEnElMes,
+    List<ProductoVendidoDto> TopProductos,
+    int StockTotalUnidades,
+    int ProductosConStockBajo,
+    int UmbralStockBajo,
+    decimal ValorTotalInventario);

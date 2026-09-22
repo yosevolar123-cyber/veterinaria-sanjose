@@ -3,6 +3,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using VetSanJose.Application.Abstractions;
+using VetSanJose.Application.Common;
 using VetSanJose.Domain.Common;
 using VetSanJose.Shared.Reportes;
 
@@ -61,6 +62,77 @@ public class ReportesService(IAppDbContext db) : IReportesService
             usosInsumo.Sum(u => u.Costo),
             historiales.Select(h => h.ClienteId).Distinct().Count(),
             historiales.Count);
+    }
+
+    public async Task<ReporteNegocioMesDto> GetReporteNegocioMesAsync(int? anio, int? mes, CancellationToken cancellationToken)
+    {
+        var hoy = DateTime.UtcNow;
+        var anioResuelto = anio ?? hoy.Year;
+        var mesResuelto = mes ?? hoy.Month;
+
+        if (mesResuelto is < 1 or > 12)
+        {
+            throw new AppException("El mes debe estar entre 1 y 12.");
+        }
+
+        var inicio = new DateTimeOffset(new DateTime(anioResuelto, mesResuelto, 1, 0, 0, 0, DateTimeKind.Utc));
+        var fin = inicio.AddMonths(1);
+
+        var ventasDelMes = db.Ventas
+            .Where(v => v.Estado == EstadosVenta.Completada && v.Fecha >= inicio && v.Fecha < fin);
+
+        var ventasCantidad = await ventasDelMes.CountAsync(cancellationToken);
+        var ventasMonto = await ventasDelMes.SumAsync(v => (decimal?)v.Total, cancellationToken) ?? 0m;
+
+        // Agregación en la base: se agrupa detalle_ventas por producto y sólo vuelven las filas resumidas.
+        var vendidos = await db.DetallesVenta
+            .Where(d => d.Venta.Estado == EstadosVenta.Completada && d.Venta.Fecha >= inicio && d.Venta.Fecha < fin)
+            .GroupBy(d => new { d.ProductoId, d.Producto.Nombre })
+            .Select(g => new ProductoVendidoDto(
+                g.Key.ProductoId,
+                g.Key.Nombre,
+                g.Sum(d => d.Cantidad),
+                g.Sum(d => d.Subtotal)))
+            .OrderByDescending(p => p.CantidadVendida)
+            .ToListAsync(cancellationToken);
+
+        var productosVendibles = db.Productos.Where(p => p.Activo && p.Tipo == TiposProducto.VentaPublico);
+
+        var idsVendidos = vendidos.Select(p => p.ProductoId).ToList();
+
+        var sinVentas = await productosVendibles
+            .Where(p => !idsVendidos.Contains(p.Id))
+            .OrderBy(p => p.Nombre)
+            .Select(p => new ProductoVendidoDto(p.Id, p.Nombre, 0, 0m))
+            .ToListAsync(cancellationToken);
+
+        // "Menos vendido" es un producto sin ventas si lo hay; si todos vendieron, el de menor cantidad.
+        var menosVendido = sinVentas.FirstOrDefault() ?? vendidos.LastOrDefault();
+
+        var inventario = await db.Productos
+            .Where(p => p.Activo)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                StockTotal = g.Sum(p => p.Stock),
+                Valor = g.Sum(p => p.Precio * p.Stock),
+                StockBajo = g.Count(p => p.Stock <= InventarioConfig.UmbralStockBajoPorDefecto),
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new ReporteNegocioMesDto(
+            anioResuelto,
+            mesResuelto,
+            ventasMonto,
+            ventasCantidad,
+            vendidos.FirstOrDefault(),
+            menosVendido,
+            sinVentas.Count,
+            vendidos.Take(5).ToList(),
+            inventario?.StockTotal ?? 0,
+            inventario?.StockBajo ?? 0,
+            InventarioConfig.UmbralStockBajoPorDefecto,
+            inventario?.Valor ?? 0m);
     }
 
     public async Task<byte[]> GetReporteFinancieroPdfAsync(DateOnly? desde, DateOnly? hasta, CancellationToken cancellationToken)

@@ -44,7 +44,7 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
         {
             clienteId = currentUser.Id;
         }
-        else if (currentUser.EsAdministrador)
+        else if (currentUser.EsAdministrador || currentUser.EsSecretaria)
         {
             if (request.ClienteId is null)
             {
@@ -82,7 +82,7 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
         var mascota = await BuscarAsync(id, cancellationToken);
         VerificarPropiedad(mascota);
 
-        if (!currentUser.EsCliente && !currentUser.EsAdministrador)
+        if (!currentUser.EsCliente && !currentUser.EsAdministrador && !currentUser.EsSecretaria)
         {
             throw new ForbiddenAppException("No tiene permisos para editar mascotas.");
         }

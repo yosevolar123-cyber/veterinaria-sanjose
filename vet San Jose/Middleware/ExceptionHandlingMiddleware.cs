@@ -59,6 +59,8 @@ internal static class ReasonPhrases
         403 => "No autorizado",
         404 => "No encontrado",
         409 => "Conflicto",
+        502 => "Error del servicio de almacenamiento",
+        503 => "Servicio no disponible",
         _ => "Error interno del servidor",
     };
 }

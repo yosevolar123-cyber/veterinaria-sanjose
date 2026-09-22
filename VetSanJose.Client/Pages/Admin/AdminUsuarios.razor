@@ -15,6 +15,11 @@
         <button class="btn-primario" @onclick="AbrirCrear">+ Nuevo usuario</button>
     </div>
 
+    @if (!string.IsNullOrEmpty(errorTabla))
+    {
+        <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@errorTabla</p>
+    }
+
     @if (cargando)
     {
         <div class="skeleton h-40"></div>
@@ -38,7 +43,16 @@
                         <tr class="border-b border-[var(--color-gris-borde)]">
                             <td class="py-2">@usuario.Nombre @usuario.Apellido</td>
                             <td class="py-2">@usuario.Email</td>
-                            <td class="py-2 capitalize">@usuario.Rol</td>
+                            <td class="py-2">
+                                <select class="campo-brutal-sm capitalize" value="@usuario.Rol"
+                                        disabled="@(procesandoId == usuario.Id)"
+                                        @onchange="e => CambiarRolAsync(usuario, e.Value?.ToString())">
+                                    <option value="@Roles.Cliente">Cliente</option>
+                                    <option value="@Roles.Doctor">Doctor</option>
+                                    <option value="@Roles.Secretaria">Secretaria</option>
+                                    <option value="@Roles.Administrador">Administrador</option>
+                                </select>
+                            </td>
                             <td class="py-2">
                                 <span class="rounded-full px-2 py-0.5 text-xs @(usuario.Activo ? "bg-green-50 text-[var(--color-exito)]" : "bg-red-50 text-[var(--color-error)]")">
                                     @(usuario.Activo ? "Activo" : "Desactivado")
@@ -46,7 +60,11 @@
                             </td>
                             <td class="py-2 text-right">
                                 <button class="text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(usuario)">Editar</button>
-                                <button class="ml-3 text-[var(--color-error)] hover:underline" @onclick="() => EliminarAsync(usuario)">Eliminar</button>
+                                <button class="ml-3 hover:underline @(usuario.Activo ? "text-[var(--color-error)]" : "text-[var(--color-exito)]")"
+                                        disabled="@(procesandoId == usuario.Id)"
+                                        @onclick="() => CambiarEstadoAsync(usuario)">
+                                    @(usuario.Activo ? "Desactivar" : "Reactivar")
+                                </button>
                             </td>
                         </tr>
                     }
@@ -83,7 +101,8 @@
         {
             <div class="grid grid-cols-2 gap-3">
                 <input class="campo-brutal" placeholder="Especialidad" @bind="form.Especialidad" />
-                <input class="campo-brutal" placeholder="Matrícula" @bind="form.Matricula" />
+                <input class="campo-brutal" placeholder="Matrícula" @bind="form.Matricula" @bind:event="oninput"
+                       pattern="[0-9]+" title="Solo números" />
             </div>
         }
 
@@ -107,6 +126,8 @@
 
     private bool modalVisible;
     private long? editandoId;
+    private long? procesandoId;
+    private string? errorTabla;
     private bool guardando;
     private string? error;
     private FormModel form = new();
@@ -118,6 +139,76 @@
         cargando = true;
         usuarios = await UsuariosApiClient.GetAllAsync(string.IsNullOrWhiteSpace(filtroRol) ? null : filtroRol);
         cargando = false;
+    }
+
+    private async Task CambiarEstadoAsync(UsuarioAdminDto usuario)
+    {
+        errorTabla = null;
+
+        var accion = usuario.Activo ? "desactivar" : "reactivar";
+        var confirmado = await JsRuntime.InvokeAsync<bool>(
+            "confirm",
+            usuario.Activo
+                ? $"¿Desactivar a {usuario.Nombre} {usuario.Apellido}? No podrá iniciar sesión ni aparecerá en los selectores, pero se conserva su historial."
+                : $"¿Reactivar a {usuario.Nombre} {usuario.Apellido}?");
+        if (!confirmado) return;
+
+        procesandoId = usuario.Id;
+        try
+        {
+            var response = await UsuariosApiClient.CambiarEstadoAsync(usuario.Id, !usuario.Activo);
+            if (!response.IsSuccessStatusCode)
+            {
+                errorTabla = await response.LeerMensajeAsync();
+                return;
+            }
+
+            await CargarAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            errorTabla = $"No se pudo {accion} el usuario: {ex.Message}";
+        }
+        finally
+        {
+            procesandoId = null;
+        }
+    }
+
+    private async Task CambiarRolAsync(UsuarioAdminDto usuario, string? nuevoRol)
+    {
+        errorTabla = null;
+
+        if (string.IsNullOrWhiteSpace(nuevoRol) || nuevoRol == usuario.Rol) return;
+
+        var confirmado = await JsRuntime.InvokeAsync<bool>(
+            "confirm", $"¿Cambiar el rol de {usuario.Nombre} {usuario.Apellido} a \"{nuevoRol}\"? Se aplicará en su próximo inicio de sesión.");
+        if (!confirmado)
+        {
+            await CargarAsync();
+            return;
+        }
+
+        procesandoId = usuario.Id;
+        try
+        {
+            var response = await UsuariosApiClient.CambiarRolAsync(usuario.Id, nuevoRol);
+            if (!response.IsSuccessStatusCode)
+            {
+                errorTabla = await response.LeerMensajeAsync();
+            }
+
+            await CargarAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            errorTabla = $"No se pudo cambiar el rol: {ex.Message}";
+            await CargarAsync();
+        }
+        finally
+        {
+            procesandoId = null;
+        }
     }
 
     private void AbrirCrear()
@@ -148,6 +239,7 @@
 
     private static readonly Regex NombreRegex = new(@"^[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+$", RegexOptions.Compiled);
     private static readonly Regex TelefonoRegex = new(@"^\+?[0-9]{7,15}$", RegexOptions.Compiled);
+    private static readonly Regex MatriculaRegex = new(@"^[0-9]{1,20}$", RegexOptions.Compiled);
 
     private async Task GuardarAsync()
     {
@@ -168,6 +260,12 @@
         if (!string.IsNullOrWhiteSpace(form.Telefono) && !TelefonoRegex.IsMatch(form.Telefono.Trim()))
         {
             error = "El teléfono solo puede contener números (7 a 15 dígitos), con un '+' opcional al inicio.";
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(form.Matricula) && !MatriculaRegex.IsMatch(form.Matricula.Trim()))
+        {
+            error = "La matrícula solo puede contener números.";
             return;
         }
 
@@ -201,22 +299,6 @@
         {
             guardando = false;
         }
-    }
-
-    private async Task EliminarAsync(UsuarioAdminDto usuario)
-    {
-        var confirmado = await JsRuntime.InvokeAsync<bool>(
-            "confirm", $"¿Eliminar al usuario {usuario.Nombre} {usuario.Apellido}? Esta acción no se puede deshacer.");
-        if (!confirmado) return;
-
-        var response = await UsuariosApiClient.EliminarAsync(usuario.Id);
-        if (!response.IsSuccessStatusCode)
-        {
-            error = await response.LeerMensajeAsync();
-            return;
-        }
-
-        await CargarAsync();
     }
 
     private class FormModel

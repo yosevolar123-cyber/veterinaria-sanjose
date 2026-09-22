@@ -25,9 +25,10 @@ public class UsuariosController(
 
     [HttpGet]
     [Authorize(Roles = $"{Roles.Doctor},{Roles.Secretaria},{Roles.Administrador}")]
-    public async Task<ActionResult<List<UsuarioAdminDto>>> ObtenerTodos([FromQuery] string? rol, CancellationToken cancellationToken)
+    public async Task<ActionResult<List<UsuarioAdminDto>>> ObtenerTodos(
+        [FromQuery] string? rol, [FromQuery] bool? soloActivos, CancellationToken cancellationToken)
     {
-        return Ok(await usuariosService.GetAllAsync(rol, cancellationToken));
+        return Ok(await usuariosService.GetAllAsync(rol, soloActivos, cancellationToken));
     }
 
     [HttpGet("{id:long}")]
@@ -38,7 +39,7 @@ public class UsuariosController(
     }
 
     [HttpPost]
-    [Authorize(Roles = Roles.Administrador)]
+    [Authorize(Roles = $"{Roles.Secretaria},{Roles.Administrador}")]
     public async Task<ActionResult<UsuarioAdminDto>> Crear(CrearUsuarioRequest request, CancellationToken cancellationToken)
     {
         if (await crearValidator.ValidarAsync(request) is { } error) return error;
@@ -56,11 +57,19 @@ public class UsuariosController(
         return Ok(await usuariosService.ActualizarAsync(id, request, cancellationToken));
     }
 
-    [HttpDelete("{id:long}")]
+    [HttpPatch("{id:long}/estado")]
     [Authorize(Roles = Roles.Administrador)]
-    public async Task<IActionResult> Eliminar(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<UsuarioAdminDto>> CambiarEstado(
+        long id, CambiarEstadoUsuarioRequest request, CancellationToken cancellationToken)
     {
-        await usuariosService.EliminarAsync(id, cancellationToken);
-        return NoContent();
+        return Ok(await usuariosService.CambiarEstadoAsync(id, request.Activo, cancellationToken));
+    }
+
+    [HttpPatch("{id:long}/rol")]
+    [Authorize(Roles = Roles.Administrador)]
+    public async Task<ActionResult<UsuarioAdminDto>> CambiarRol(
+        long id, CambiarRolUsuarioRequest request, CancellationToken cancellationToken)
+    {
+        return Ok(await usuariosService.CambiarRolAsync(id, request.Rol, cancellationToken));
     }
 }

@@ -18,6 +18,13 @@ public class ReportesController(IReportesService reportesService) : ControllerBa
         return Ok(await reportesService.GetReporteFinancieroAsync(desde, hasta, cancellationToken));
     }
 
+    [HttpGet("negocio-mes")]
+    public async Task<ActionResult<ReporteNegocioMesDto>> NegocioMes(
+        [FromQuery] int? anio, [FromQuery] int? mes, CancellationToken cancellationToken)
+    {
+        return Ok(await reportesService.GetReporteNegocioMesAsync(anio, mes, cancellationToken));
+    }
+
     [HttpGet("financiero/pdf")]
     public async Task<IActionResult> FinancieroPdf(
         [FromQuery] DateOnly? desde, [FromQuery] DateOnly? hasta, CancellationToken cancellationToken)
