@@ -4,9 +4,29 @@
 // los datos del reporte.
 const graficos = new Map();
 
-export function renderizarBarras(idCanvas, etiquetas, series) {
+// Chart.js llega por CDN con `defer`, asi que puede no estar listo cuando Blazor
+// dibuja el primer grafico. Antes se devolvia en silencio y el canvas quedaba
+// vacio para siempre; ahora se espera a que la libreria aparezca.
+function esperarChartJs(intentosRestantes = 50) {
+    if (window.Chart) {
+        return Promise.resolve(true);
+    }
+
+    if (intentosRestantes <= 0) {
+        return Promise.resolve(false);
+    }
+
+    return new Promise((resolve) => setTimeout(resolve, 100))
+        .then(() => esperarChartJs(intentosRestantes - 1));
+}
+
+export async function renderizarBarras(idCanvas, etiquetas, series) {
+    if (!await esperarChartJs()) {
+        return;
+    }
+
     const canvas = document.getElementById(idCanvas);
-    if (!canvas || !window.Chart) {
+    if (!canvas) {
         return;
     }
 

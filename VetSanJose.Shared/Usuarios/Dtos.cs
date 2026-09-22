@@ -29,3 +29,7 @@ public record ActualizarUsuarioRequest(
     bool Activo,
     string? Especialidad = null,
     string? Matricula = null);
+
+public record CambiarEstadoUsuarioRequest(bool Activo);
+
+public record CambiarRolUsuarioRequest(string Rol);

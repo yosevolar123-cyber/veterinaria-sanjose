@@ -44,7 +44,7 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
         {
             clienteId = currentUser.Id;
         }
-        else if (currentUser.EsAdministrador)
+        else if (currentUser.EsAdministrador || currentUser.EsSecretaria)
         {
             if (request.ClienteId is null)
             {
@@ -67,7 +67,7 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
             FechaNacimiento = request.FechaNacimiento,
             Sexo = request.Sexo,
             Peso = request.Peso,
-            FotoUrl = request.FotoUrl,
+            ImagenUrl = request.ImagenUrl,
             Activo = true,
         };
 
@@ -82,7 +82,7 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
         var mascota = await BuscarAsync(id, cancellationToken);
         VerificarPropiedad(mascota);
 
-        if (!currentUser.EsCliente && !currentUser.EsAdministrador)
+        if (!currentUser.EsCliente && !currentUser.EsAdministrador && !currentUser.EsSecretaria)
         {
             throw new ForbiddenAppException("No tiene permisos para editar mascotas.");
         }
@@ -93,7 +93,7 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
         mascota.FechaNacimiento = request.FechaNacimiento;
         mascota.Sexo = request.Sexo;
         mascota.Peso = request.Peso;
-        mascota.FotoUrl = request.FotoUrl;
+        mascota.ImagenUrl = request.ImagenUrl;
 
         if (currentUser.EsAdministrador)
         {
@@ -120,8 +120,8 @@ public class MascotasService(IAppDbContext db, ICurrentUser currentUser) : IMasc
     }
 
     private static readonly System.Linq.Expressions.Expression<Func<Mascota, MascotaDto>> MapExpression =
-        m => new MascotaDto(m.Id, m.ClienteId, m.Nombre, m.Especie, m.Raza, m.FechaNacimiento, m.Sexo, m.Peso, m.FotoUrl, m.Activo);
+        m => new MascotaDto(m.Id, m.ClienteId, m.Nombre, m.Especie, m.Raza, m.FechaNacimiento, m.Sexo, m.Peso, m.ImagenUrl, m.Activo);
 
     private static MascotaDto MapToDto(Mascota m) =>
-        new(m.Id, m.ClienteId, m.Nombre, m.Especie, m.Raza, m.FechaNacimiento, m.Sexo, m.Peso, m.FotoUrl, m.Activo);
+        new(m.Id, m.ClienteId, m.Nombre, m.Especie, m.Raza, m.FechaNacimiento, m.Sexo, m.Peso, m.ImagenUrl, m.Activo);
 }

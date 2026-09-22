@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = Roles.Cliente)]
 @inject MascotasApiClient MascotasApiClient
 @inject ArchivosApiClient ArchivosApiClient
+@using System.Text.Json
 @using VetSanJose.Shared.Mascotas
 
 <PageTitle>Mis mascotas — Veterinaria San José</PageTitle>
@@ -49,7 +50,13 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn-primario sm:col-span-2">Guardar mascota</button>
+            @if (!string.IsNullOrEmpty(errorGuardado))
+            {
+                <p class="sm:col-span-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@errorGuardado</p>
+            }
+            <button type="submit" class="btn-primario sm:col-span-2" disabled="@(guardando || subiendoFoto)">
+                @(guardando ? "Guardando..." : "Guardar mascota")
+            </button>
         </EditForm>
     }
 
@@ -60,6 +67,15 @@
             {
                 <div class="skeleton h-24"></div>
             }
+        </div>
+    }
+    else if (errorCarga is not null)
+    {
+        <div class="tarjeta flex flex-col items-center gap-3 p-8 text-center">
+            <span class="text-4xl">😿</span>
+            <p class="font-semibold">No pudimos cargar tus mascotas, intentá de nuevo.</p>
+            <p class="text-sm text-gray-400">@errorCarga</p>
+            <button class="btn-primario" @onclick="CargarAsync">Reintentar</button>
         </div>
     }
     else if (mascotas.Count == 0)
@@ -74,9 +90,9 @@
                 <div class="tarjeta p-5">
                     <div class="mb-1 flex items-center justify-between">
                         <h3 class="text-lg">@mascota.Nombre</h3>
-                        @if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+                        @if (!string.IsNullOrWhiteSpace(mascota.ImagenUrl))
                         {
-                            <img src="@mascota.FotoUrl" class="h-8 w-8 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+                            <img src="@mascota.ImagenUrl" class="h-8 w-8 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
                         }
                         else
                         {
@@ -96,6 +112,9 @@
 @code {
     private List<MascotaDto> mascotas = [];
     private bool cargando = true;
+    private string? errorCarga;
+    private bool guardando;
+    private string? errorGuardado;
     private bool mostrarFormulario;
     private NuevaMascotaModel nuevaMascota = new();
 
@@ -117,8 +136,22 @@
     private async Task CargarAsync()
     {
         cargando = true;
-        mascotas = await MascotasApiClient.GetMisMascotasAsync();
-        cargando = false;
+        errorCarga = null;
+        try
+        {
+            mascotas = await MascotasApiClient.GetMisMascotasAsync();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            // Sin esto la pantalla quedaba en skeleton para siempre y Blazor mostraba
+            // el cartel genérico "An unhandled error has occurred".
+            mascotas = [];
+            errorCarga = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
     }
 
     private async Task SubirFotoAsync(InputFileChangeEventArgs e)
@@ -150,12 +183,17 @@
             var (exito, url, error) = await ArchivosApiClient.SubirImagenAsync("mascotas", ms, archivo.Name, archivo.ContentType);
             if (exito)
             {
-                nuevaMascota.FotoUrl = url;
+                nuevaMascota.ImagenUrl = url;
             }
             else
             {
                 errorFoto = error;
             }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            fotoPreviewUrl = null;
+            errorFoto = $"No se pudo subir la foto: {ex.Message}";
         }
         finally
         {
@@ -165,14 +203,30 @@
 
     private async Task CrearAsync()
     {
-        await MascotasApiClient.CrearAsync(new CrearMascotaRequest(
-            null, nuevaMascota.Nombre, nuevaMascota.Especie, nuevaMascota.Raza, null,
-            string.IsNullOrWhiteSpace(nuevaMascota.Sexo) ? null : nuevaMascota.Sexo, null, nuevaMascota.FotoUrl));
+        guardando = true;
+        errorGuardado = null;
+        try
+        {
+            await MascotasApiClient.CrearAsync(new CrearMascotaRequest(
+                null, nuevaMascota.Nombre, nuevaMascota.Especie, nuevaMascota.Raza, null,
+                string.IsNullOrWhiteSpace(nuevaMascota.Sexo) ? null : nuevaMascota.Sexo, null, nuevaMascota.ImagenUrl));
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            errorGuardado = $"No se pudo guardar la mascota: {ex.Message}";
+            return;
+        }
+        finally
+        {
+            guardando = false;
+        }
 
         nuevaMascota = new();
         errorFoto = null;
         fotoPreviewUrl = null;
         mostrarFormulario = false;
+
+        // Refetch explícito: la foto recién subida aparece en la lista sin recargar la página.
         await CargarAsync();
     }
 
@@ -182,6 +236,6 @@
         public string Especie { get; set; } = "";
         public string? Raza { get; set; }
         public string? Sexo { get; set; }
-        public string? FotoUrl { get; set; }
+        public string? ImagenUrl { get; set; }
     }
 }

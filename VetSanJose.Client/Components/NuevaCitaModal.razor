@@ -102,10 +102,10 @@
         {
             try
             {
-                clientes = await UsuariosApiClient.GetAllAsync("cliente");
+                clientes = await UsuariosApiClient.GetAllAsync("cliente", soloActivos: true);
                 if (MostrarSelectorDoctor)
                 {
-                    doctores = await UsuariosApiClient.GetAllAsync("doctor");
+                    doctores = await UsuariosApiClient.GetAllAsync("doctor", soloActivos: true);
                 }
             }
             catch (HttpRequestException ex)

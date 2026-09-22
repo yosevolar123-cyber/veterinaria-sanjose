@@ -1,0 +1,36 @@
+@using VetSanJose.Shared.Mascotas
+
+<div class="tarjeta flex items-center gap-4 p-5">
+    @if (!string.IsNullOrWhiteSpace(Mascota.ImagenUrl))
+    {
+        <img src="@Mascota.ImagenUrl" class="h-20 w-20 shrink-0 rounded-full object-cover" alt="Foto de @Mascota.Nombre" />
+    }
+    else
+    {
+        <span class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-celeste-suave)] text-4xl">
+            @(Mascota.Especie.Equals("gato", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")
+        </span>
+    }
+    <div class="min-w-0">
+        <h3 class="truncate text-lg">@Mascota.Nombre</h3>
+        <p class="text-sm text-gray-500">
+            @Mascota.Especie @(string.IsNullOrWhiteSpace(Mascota.Raza) ? "" : $"· {Mascota.Raza}")
+        </p>
+        @if (!string.IsNullOrWhiteSpace(Mascota.Sexo))
+        {
+            <p class="text-sm text-gray-400 capitalize">@Mascota.Sexo</p>
+        }
+        @if (Mascota.Peso is not null)
+        {
+            <p class="text-sm text-gray-400">Peso: @Mascota.Peso kg</p>
+        }
+        @if (Mascota.FechaNacimiento is not null)
+        {
+            <p class="text-sm text-gray-400">Nacimiento: @Mascota.FechaNacimiento.Value.ToString("dd/MM/yyyy")</p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public MascotaDto Mascota { get; set; } = null!;
+}

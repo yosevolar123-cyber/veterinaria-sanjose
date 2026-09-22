@@ -38,7 +38,7 @@ public class MascotasController(
     }
 
     [HttpPost]
-    [Authorize(Roles = $"{Roles.Cliente},{Roles.Administrador}")]
+    [Authorize(Roles = $"{Roles.Cliente},{Roles.Secretaria},{Roles.Administrador}")]
     public async Task<ActionResult<MascotaDto>> Crear(CrearMascotaRequest request, CancellationToken cancellationToken)
     {
         if (await crearValidator.ValidarAsync(request) is { } error) return error;
@@ -48,7 +48,7 @@ public class MascotasController(
     }
 
     [HttpPut("{id:long}")]
-    [Authorize(Roles = $"{Roles.Cliente},{Roles.Administrador}")]
+    [Authorize(Roles = $"{Roles.Cliente},{Roles.Secretaria},{Roles.Administrador}")]
     public async Task<ActionResult<MascotaDto>> Actualizar(long id, ActualizarMascotaRequest request, CancellationToken cancellationToken)
     {
         if (await actualizarValidator.ValidarAsync(request) is { } error) return error;

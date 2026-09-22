@@ -26,9 +26,9 @@
             {
                 <img src="@fotoPreviewUrl" class="h-16 w-16 rounded-full border-2 border-dashed border-[var(--color-celeste-intenso)] object-cover" alt="Vista previa de la foto" />
             }
-            else if (!string.IsNullOrWhiteSpace(mascota.FotoUrl))
+            else if (!string.IsNullOrWhiteSpace(mascota.ImagenUrl))
             {
-                <img src="@mascota.FotoUrl" class="h-16 w-16 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
+                <img src="@mascota.ImagenUrl" class="h-16 w-16 rounded-full object-cover" alt="Foto de @mascota.Nombre" />
             }
             else
             {
@@ -171,7 +171,15 @@
             if (actualizada is not null)
             {
                 mascota = actualizada;
+                // Se descarta la vista previa local para que la ficha pase a mostrar la URL ya
+                // persistida: así lo que se ve es exactamente lo que quedó guardado.
+                fotoPreviewUrl = null;
             }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            fotoPreviewUrl = null;
+            errorFoto = $"No se pudo guardar la foto: {ex.Message}";
         }
         finally
         {

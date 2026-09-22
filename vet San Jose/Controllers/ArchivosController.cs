@@ -26,7 +26,7 @@ public class ArchivosController(IStorageService storageService) : ControllerBase
     private static readonly Dictionary<string, string[]> RolesPorCarpeta = new(StringComparer.OrdinalIgnoreCase)
     {
         ["productos"] = [Roles.Administrador, Roles.Secretaria],
-        ["mascotas"] = [Roles.Cliente, Roles.Administrador],
+        ["mascotas"] = [Roles.Cliente, Roles.Secretaria, Roles.Administrador],
     };
 
     [HttpPost("imagenes")]
@@ -60,6 +60,13 @@ public class ArchivosController(IStorageService storageService) : ControllerBase
         }
 
         var extension = ExtensionPorContentType[contentType];
+
+        // El bucket de Supabase sólo acepta los MIME canónicos; "image/jpg" que envían algunos
+        // navegadores en Windows sería rechazado allá aunque aquí lo demos por válido.
+        if (string.Equals(contentType, "image/jpg", StringComparison.OrdinalIgnoreCase))
+        {
+            contentType = "image/jpeg";
+        }
         var nombreArchivo = $"{Guid.NewGuid():N}.{extension}";
 
         await using var stream = archivo.OpenReadStream();

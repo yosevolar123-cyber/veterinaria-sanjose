@@ -4,10 +4,12 @@
 @using VetSanJose.Shared.Mascotas
 @using VetSanJose.Shared.Productos
 @using VetSanJose.Shared.Proveedores
+@using VetSanJose.Shared.HistorialesMedicos
 @inject UsuariosApiClient UsuariosApiClient
 @inject MascotasApiClient MascotasApiClient
 @inject ProductosApiClient ProductosApiClient
 @inject ProveedoresApiClient ProveedoresApiClient
+@inject HistorialMedicoApiClient HistorialApiClient
 @inject DashboardApiClient DashboardApiClient
 
 <PageTitle>Panel Doctor — Veterinaria San José</PageTitle>
@@ -63,7 +65,7 @@
                     }
                 </select>
 
-                <select class="campo-brutal" @bind="mascotaSeleccionada">
+                <select class="campo-brutal" @bind="mascotaSeleccionada" @bind:after="CargarHistorialPrevioAsync">
                     <option value="0">Selecciona una mascota</option>
                     @foreach (var mascota in mascotas)
                     {
@@ -74,7 +76,38 @@
 
             @if (mascotaSeleccionada > 0)
             {
-                <HistorialMedicoForm @key="mascotaSeleccionada" MascotaId="mascotaSeleccionada" />
+                var mascotaActual = mascotas.FirstOrDefault(m => m.Id == mascotaSeleccionada);
+
+                <div class="mb-6 grid gap-4 lg:grid-cols-2">
+                    @if (mascotaActual is not null)
+                    {
+                        <FichaMascota Mascota="mascotaActual" />
+                    }
+
+                    <div class="tarjeta p-5">
+                        <h3 class="mb-3 text-lg">Historial previo</h3>
+                        @if (historialPrevio.Count == 0)
+                        {
+                            <p class="text-sm text-gray-400">Sin registros anteriores para esta mascota.</p>
+                        }
+                        else
+                        {
+                            <ul class="max-h-48 space-y-2 overflow-y-auto text-sm">
+                                @foreach (var registro in historialPrevio)
+                                {
+                                    <li class="border-b border-[var(--color-gris-borde)] pb-2 last:border-0">
+                                        <p class="text-xs text-gray-400">
+                                            @registro.Fecha.LocalDateTime.ToString("dd/MM/yyyy") · @registro.DoctorNombre
+                                        </p>
+                                        <p>@(string.IsNullOrWhiteSpace(registro.Diagnostico) ? "Sin diagnóstico registrado" : registro.Diagnostico)</p>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+
+                <HistorialMedicoForm @key="mascotaSeleccionada" MascotaId="mascotaSeleccionada" OnGuardado="CargarHistorialPrevioAsync" />
             }
             else
             {
@@ -138,6 +171,7 @@
     private List<MascotaDto> mascotas = [];
     private long clienteSeleccionado;
     private long mascotaSeleccionada;
+    private List<HistorialMedicoDto> historialPrevio = [];
     private string? error;
 
     private List<ProductoDto> productosStockBajo = [];
@@ -154,7 +188,7 @@
 
         try
         {
-            clientes = await UsuariosApiClient.GetAllAsync("cliente");
+            clientes = await UsuariosApiClient.GetAllAsync("cliente", soloActivos: true);
         }
         catch (HttpRequestException ex)
         {
@@ -164,9 +198,28 @@
         await CargarStockAsync();
     }
 
+    private async Task CargarHistorialPrevioAsync()
+    {
+        if (mascotaSeleccionada <= 0)
+        {
+            historialPrevio = [];
+            return;
+        }
+
+        try
+        {
+            historialPrevio = await HistorialApiClient.GetPorMascotaAsync(mascotaSeleccionada);
+        }
+        catch (HttpRequestException)
+        {
+            historialPrevio = [];
+        }
+    }
+
     private async Task CargarMascotasAsync()
     {
         mascotaSeleccionada = 0;
+        historialPrevio = [];
         try
         {
             mascotas = clienteSeleccionado > 0 ? await MascotasApiClient.GetPorClienteAsync(clienteSeleccionado) : [];

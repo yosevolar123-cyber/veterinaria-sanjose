@@ -13,6 +13,9 @@ internal static class UsuarioValidationRules
 
     public static readonly Regex NombreRegex = new(@"^[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+$", RegexOptions.Compiled);
     public const string NombreMensaje = "Solo se permiten letras.";
+
+    public static readonly Regex MatriculaRegex = new(@"^[0-9]{1,20}$", RegexOptions.Compiled);
+    public const string MatriculaMensaje = "La matrícula debe contener sólo dígitos.";
 }
 
 public class CrearUsuarioRequestValidator : AbstractValidator<CrearUsuarioRequest>
@@ -31,7 +34,9 @@ public class CrearUsuarioRequestValidator : AbstractValidator<CrearUsuarioReques
             .Matches(UsuarioValidationRules.TelefonoRegex).WithMessage(UsuarioValidationRules.TelefonoMensaje)
             .When(x => !string.IsNullOrWhiteSpace(x.Telefono));
         RuleFor(x => x.Especialidad).MaximumLength(150);
-        RuleFor(x => x.Matricula).MaximumLength(50);
+        RuleFor(x => x.Matricula).MaximumLength(50)
+            .Matches(UsuarioValidationRules.MatriculaRegex).WithMessage(UsuarioValidationRules.MatriculaMensaje)
+            .When(x => !string.IsNullOrWhiteSpace(x.Matricula));
     }
 }
 
@@ -49,6 +54,8 @@ public class ActualizarUsuarioRequestValidator : AbstractValidator<ActualizarUsu
             .Matches(UsuarioValidationRules.TelefonoRegex).WithMessage(UsuarioValidationRules.TelefonoMensaje)
             .When(x => !string.IsNullOrWhiteSpace(x.Telefono));
         RuleFor(x => x.Especialidad).MaximumLength(150);
-        RuleFor(x => x.Matricula).MaximumLength(50);
+        RuleFor(x => x.Matricula).MaximumLength(50)
+            .Matches(UsuarioValidationRules.MatriculaRegex).WithMessage(UsuarioValidationRules.MatriculaMensaje)
+            .When(x => !string.IsNullOrWhiteSpace(x.Matricula));
     }
 }

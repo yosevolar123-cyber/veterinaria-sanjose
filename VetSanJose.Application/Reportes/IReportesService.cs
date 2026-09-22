@@ -6,5 +6,7 @@ public interface IReportesService
 {
     Task<ReporteFinancieroDto> GetReporteFinancieroAsync(DateOnly? desde, DateOnly? hasta, CancellationToken cancellationToken);
 
+    Task<ReporteNegocioMesDto> GetReporteNegocioMesAsync(int? anio, int? mes, CancellationToken cancellationToken);
+
     Task<byte[]> GetReporteFinancieroPdfAsync(DateOnly? desde, DateOnly? hasta, CancellationToken cancellationToken);
 }
