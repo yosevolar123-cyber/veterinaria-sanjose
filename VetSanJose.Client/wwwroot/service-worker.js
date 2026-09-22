@@ -1,7 +1,7 @@
 // Service worker de Veterinaria San José: cachea el app shell y usa
 // stale-while-revalidate para el resto de las peticiones same-origin,
 // dejando pasar sin tocar cualquier petición cross-origin (p. ej. la API).
-const CACHE_NAME = 'vetsanjose-cache-v1';
+const CACHE_NAME = 'vetsanjose-cache-v2';
 const PRECACHE_URLS = [
   './',
   'index.html',

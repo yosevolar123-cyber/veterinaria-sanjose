@@ -16,6 +16,10 @@ export function iniciar(dotNetRef, idioma) {
 
     detener();
 
+    // El navegador solo admite un reconocimiento activo: avisamos al asistente de voz global
+    // (asistenteVoz.js) para que suelte el micrófono mientras dure el dictado.
+    window.dispatchEvent(new CustomEvent('vsj:dictado-inicia'));
+
     const reconocedor = new ReconocedorCtor();
     reconocedor.lang = idioma || 'es-BO';
     reconocedor.continuous = true;

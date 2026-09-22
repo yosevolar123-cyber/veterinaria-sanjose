@@ -143,8 +143,8 @@
             </label>
         }
 
-        <button class="btn-primario w-full" disabled="@guardando" @onclick="GuardarAsync">
-            @(guardando ? "Guardando..." : "Guardar")
+        <button class="btn-primario w-full" disabled="@(guardando || subiendoImagen)" @onclick="GuardarAsync">
+            @(guardando ? "Guardando..." : subiendoImagen ? "Esperando imagen..." : "Guardar")
         </button>
     </div>
 </ModalShell>
@@ -280,7 +280,10 @@
             }
             else
             {
-                errorImagen = error;
+                // Sin esto la vista previa quedaba con "Así se verá en la tienda" aunque la subida
+                // fallara, y parecía que la imagen se había guardado.
+                imagenPreviewUrl = null;
+                errorImagen = error ?? "No se pudo subir la imagen.";
             }
         }
         finally

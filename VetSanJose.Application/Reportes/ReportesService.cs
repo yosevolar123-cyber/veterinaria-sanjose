@@ -1,7 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
 using VetSanJose.Application.Abstractions;
 using VetSanJose.Application.Common;
 using VetSanJose.Domain.Common;
@@ -84,11 +81,33 @@ public class ReportesService(IAppDbContext db) : IReportesService
         var ventasCantidad = await ventasDelMes.CountAsync(cancellationToken);
         var ventasMonto = await ventasDelMes.SumAsync(v => (decimal?)v.Total, cancellationToken) ?? 0m;
 
+        var ranking = await GetRankingProductosAsync(inicio, fin, cancellationToken);
+        var inventario = await GetResumenInventarioAsync(cancellationToken);
+
+        return new ReporteNegocioMesDto(
+            anioResuelto,
+            mesResuelto,
+            ventasMonto,
+            ventasCantidad,
+            ranking.MasVendido,
+            ranking.MenosVendido,
+            ranking.SinVentas,
+            ranking.Top,
+            inventario.StockTotal,
+            inventario.StockBajo,
+            InventarioConfig.UmbralStockBajoPorDefecto,
+            inventario.Valor);
+    }
+
+    // Ranking de productos vendidos en [inicio, finExclusivo). Lo comparten el reporte mensual y el PDF.
+    private async Task<RankingProductos> GetRankingProductosAsync(
+        DateTimeOffset inicio, DateTimeOffset finExclusivo, CancellationToken cancellationToken)
+    {
         // Agregación en la base: se agrupa detalle_ventas por producto y sólo vuelven las filas resumidas.
         // La proyección intermedia es anónima a propósito: EF no puede ordenar por una propiedad de un
         // record proyectado desde un GroupBy (no la reconoce como el agregado) y tira el query al cliente.
         var vendidosAgrupados = await db.DetallesVenta
-            .Where(d => d.Venta.Estado == EstadosVenta.Completada && d.Venta.Fecha >= inicio && d.Venta.Fecha < fin)
+            .Where(d => d.Venta.Estado == EstadosVenta.Completada && d.Venta.Fecha >= inicio && d.Venta.Fecha < finExclusivo)
             .GroupBy(d => new { d.ProductoId, d.Producto.Nombre })
             .Select(g => new
             {
@@ -104,12 +123,10 @@ public class ReportesService(IAppDbContext db) : IReportesService
             .Select(x => new ProductoVendidoDto(x.ProductoId, x.Nombre, x.Cantidad, x.Total))
             .ToList();
 
-        var productosVendibles = db.Productos.Where(p => p.Activo && p.Tipo == TiposProducto.VentaPublico);
-
         var idsVendidos = vendidos.Select(p => p.ProductoId).ToList();
 
-        var sinVentasAgrupados = await productosVendibles
-            .Where(p => !idsVendidos.Contains(p.Id))
+        var sinVentasAgrupados = await db.Productos
+            .Where(p => p.Activo && p.Tipo == TiposProducto.VentaPublico && !idsVendidos.Contains(p.Id))
             .OrderBy(p => p.Nombre)
             .Select(p => new { p.Id, p.Nombre })
             .ToListAsync(cancellationToken);
@@ -121,6 +138,11 @@ public class ReportesService(IAppDbContext db) : IReportesService
         // "Menos vendido" es un producto sin ventas si lo hay; si todos vendieron, el de menor cantidad.
         var menosVendido = sinVentas.FirstOrDefault() ?? vendidos.LastOrDefault();
 
+        return new RankingProductos(vendidos.FirstOrDefault(), menosVendido, sinVentas.Count, vendidos.Take(5).ToList());
+    }
+
+    private async Task<ResumenInventario> GetResumenInventarioAsync(CancellationToken cancellationToken)
+    {
         var inventario = await db.Productos
             .Where(p => p.Activo)
             .GroupBy(_ => 1)
@@ -132,93 +154,27 @@ public class ReportesService(IAppDbContext db) : IReportesService
             })
             .FirstOrDefaultAsync(cancellationToken);
 
-        return new ReporteNegocioMesDto(
-            anioResuelto,
-            mesResuelto,
-            ventasMonto,
-            ventasCantidad,
-            vendidos.FirstOrDefault(),
-            menosVendido,
-            sinVentas.Count,
-            vendidos.Take(5).ToList(),
-            inventario?.StockTotal ?? 0,
-            inventario?.StockBajo ?? 0,
-            InventarioConfig.UmbralStockBajoPorDefecto,
-            inventario?.Valor ?? 0m);
+        return new ResumenInventario(inventario?.StockTotal ?? 0, inventario?.StockBajo ?? 0, inventario?.Valor ?? 0m);
     }
 
     public async Task<byte[]> GetReporteFinancieroPdfAsync(DateOnly? desde, DateOnly? hasta, CancellationToken cancellationToken)
     {
         var reporte = await GetReporteFinancieroAsync(desde, hasta, cancellationToken);
 
-        QuestPDF.Settings.License = LicenseType.Community;
+        var inicio = reporte.Desde.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var finExclusivo = reporte.Hasta.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var ranking = await GetRankingProductosAsync(inicio, finExclusivo, cancellationToken);
+        var inventario = await GetResumenInventarioAsync(cancellationToken);
 
-        var documento = Document.Create(container =>
-        {
-            container.Page(pagina =>
-            {
-                pagina.Size(PageSizes.A4);
-                pagina.Margin(30);
-                pagina.DefaultTextStyle(estilo => estilo.FontSize(10));
+        var datos = new ReporteFinancieroPdf.Datos(
+            reporte,
+            ranking.MasVendido,
+            ranking.MenosVendido,
+            inventario.Valor,
+            inventario.StockBajo,
+            InventarioConfig.UmbralStockBajoPorDefecto);
 
-                pagina.Header().Column(columna =>
-                {
-                    columna.Item().Text("Veterinaria San José — Reporte financiero e inventario").FontSize(16).Bold();
-                    columna.Item().Text($"Período: {reporte.Desde:dd/MM/yyyy} — {reporte.Hasta:dd/MM/yyyy}").FontColor(Colors.Grey.Darken1);
-                });
-
-                pagina.Content().PaddingTop(15).Column(columna =>
-                {
-                    columna.Item().Row(fila =>
-                    {
-                        fila.RelativeItem().Text($"Ingresos totales: Bs {reporte.TotalIngresos:N2}").Bold();
-                        fila.RelativeItem().Text($"Costos de insumos: Bs {reporte.TotalCostos:N2}").Bold();
-                    });
-                    columna.Item().PaddingBottom(10).Row(fila =>
-                    {
-                        fila.RelativeItem().Text($"Clientes atendidos: {reporte.TotalClientesAtendidos}").Bold();
-                        fila.RelativeItem().Text($"Consultas registradas: {reporte.TotalConsultas}").Bold();
-                    });
-
-                    columna.Item().Table(tabla =>
-                    {
-                        tabla.ColumnsDefinition(columnas =>
-                        {
-                            columnas.RelativeColumn(2);
-                            columnas.RelativeColumn(2);
-                            columnas.RelativeColumn(2);
-                            columnas.RelativeColumn(2);
-                            columnas.RelativeColumn(2);
-                        });
-
-                        tabla.Header(encabezado =>
-                        {
-                            foreach (var titulo in new[] { "Fecha", "Ingresos (Bs)", "Costos (Bs)", "Clientes", "Consultas" })
-                            {
-                                encabezado.Cell().Background(Colors.Blue.Lighten4).Padding(4).Text(titulo).Bold();
-                            }
-                        });
-
-                        foreach (var item in reporte.Items)
-                        {
-                            tabla.Cell().Padding(4).Text(item.Fecha.ToString("dd/MM/yyyy"));
-                            tabla.Cell().Padding(4).Text(item.Ingresos.ToString("N2"));
-                            tabla.Cell().Padding(4).Text(item.Costos.ToString("N2"));
-                            tabla.Cell().Padding(4).Text(item.ClientesAtendidos.ToString());
-                            tabla.Cell().Padding(4).Text(item.Consultas.ToString());
-                        }
-                    });
-                });
-
-                pagina.Footer().AlignCenter().Text(texto =>
-                {
-                    texto.Span("Generado el ").FontColor(Colors.Grey.Darken1);
-                    texto.Span(DateTimeOffset.Now.ToString("dd/MM/yyyy HH:mm")).FontColor(Colors.Grey.Darken1);
-                });
-            });
-        });
-
-        return await Task.Run(() => documento.GeneratePdf(), cancellationToken);
+        return await Task.Run(() => ReporteFinancieroPdf.Generar(datos), cancellationToken);
     }
 
     private static (DateOnly InicioDia, DateOnly FinDia, DateTimeOffset Inicio, DateTimeOffset Fin) ResolverRango(DateOnly? desde, DateOnly? hasta)
@@ -231,4 +187,9 @@ public class ReportesService(IAppDbContext db) : IReportesService
 
         return (inicioDia, finDia, inicio, fin);
     }
+
+    private record RankingProductos(
+        ProductoVendidoDto? MasVendido, ProductoVendidoDto? MenosVendido, int SinVentas, List<ProductoVendidoDto> Top);
+
+    private record ResumenInventario(int StockTotal, int StockBajo, decimal Valor);
 }

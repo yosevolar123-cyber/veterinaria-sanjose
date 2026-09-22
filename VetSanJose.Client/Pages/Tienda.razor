@@ -25,8 +25,8 @@
         </button>
     </div>
 
-    <div class="mb-6 flex items-center gap-2">
-        <div class="relative flex-1">
+    <div class="mb-6">
+        <div class="relative">
             <svg viewBox="0 0 24 24" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
@@ -34,7 +34,6 @@
             <input class="w-full campo-brutal pl-9" placeholder="Buscar productos... (ej. 'shampoo para perro')"
                    @bind="busqueda" @bind:event="oninput" />
         </div>
-        <MicrofonoDictado TituloPersonalizado="Buscar por voz" OnTextoReconocido="OnBusquedaPorVoz" />
     </div>
 
     <div class="mb-8 flex flex-wrap gap-2">
@@ -145,17 +144,28 @@
 
     private string? error;
 
-    private List<VetSanJose.Shared.Productos.ProductoTiendaDto> productosFiltrados =>
-        string.IsNullOrWhiteSpace(busqueda)
-            ? productos
-            : productos.Where(p =>
-                (p.Nombre?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (p.Descripcion?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false))
-                .ToList();
+    // Término que llega desde el asistente de voz global (tienda?q=comida%20para%20perro).
+    [SupplyParameterFromQuery(Name = "q")] public string? BusquedaInicial { get; set; }
+    private string? ultimaBusquedaAplicada;
 
-    private void OnBusquedaPorVoz(string texto)
+    private List<VetSanJose.Shared.Productos.ProductoTiendaDto> productosFiltrados =>
+        BusquedaProductos.Filtrar(productos, busqueda);
+
+    protected override async Task OnParametersSetAsync()
     {
-        busqueda = texto;
+        if (string.IsNullOrWhiteSpace(BusquedaInicial) || BusquedaInicial == ultimaBusquedaAplicada)
+        {
+            return;
+        }
+
+        ultimaBusquedaAplicada = BusquedaInicial;
+        busqueda = BusquedaInicial;
+
+        // Una búsqueda por voz abarca todo el catálogo, no solo la categoría que estaba elegida.
+        if (categoriaSeleccionada is not null && !cargando)
+        {
+            await FiltrarPorCategoriaAsync(null);
+        }
     }
 
     protected override async Task OnInitializedAsync()

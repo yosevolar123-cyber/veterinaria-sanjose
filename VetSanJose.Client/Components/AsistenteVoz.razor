@@ -1,0 +1,190 @@
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@implements IAsyncDisposable
+
+@* Asistente de voz único del sitio: vive en MainLayout, así que aparece en todas las páginas. *@
+<div class="fixed bottom-20 right-4 z-40 flex flex-col items-end gap-2 sm:bottom-6 sm:right-6">
+    @if (!string.IsNullOrEmpty(mensaje) || !string.IsNullOrEmpty(transcripcion))
+    {
+        <div class="max-w-[16rem] rounded-2xl border-2 border-[var(--color-tinta)] bg-white px-4 py-3 text-sm shadow-lg" role="status" aria-live="polite">
+            @if (!string.IsNullOrEmpty(transcripcion))
+            {
+                <p class="mb-1 italic text-gray-400">“@transcripcion”</p>
+            }
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <p class="@(esError ? "text-[var(--color-error)]" : "text-[var(--color-tinta)]")">@mensaje</p>
+            }
+        </div>
+    }
+
+    <button type="button"
+            class="relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[var(--color-tinta)] shadow-lg transition-colors @(escuchando ? "bg-[var(--color-error)] text-white" : "bg-[var(--color-celeste)] text-white hover:bg-[var(--color-celeste-intenso)]") @(soportado ? "" : "cursor-not-allowed opacity-50")"
+            title="@Titulo"
+            aria-label="@Titulo"
+            aria-pressed="@escuchando"
+            @onclick="AlternarAsync">
+        @if (escuchando)
+        {
+            <span class="absolute inset-0 animate-ping rounded-full bg-[var(--color-error)] opacity-30" aria-hidden="true"></span>
+        }
+        <svg viewBox="0 0 24 24" class="relative h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3" />
+            <path d="M5 10a7 7 0 0 0 14 0" />
+            <path d="M12 19v3" />
+        </svg>
+    </button>
+</div>
+
+@code {
+    private const string Idioma = "es-BO";
+
+    private IJSObjectReference? modulo;
+    private DotNetObjectReference<AsistenteVoz>? referencia;
+    private bool soportado = true;
+    private bool escuchando;
+    private string? transcripcion;
+    private string? mensaje;
+    private bool esError;
+    private CancellationTokenSource? ocultarCts;
+
+    private string Titulo => !soportado
+        ? "El asistente de voz no está disponible en este navegador"
+        : escuchando ? "Detener asistente de voz" : "Asistente de voz — decí \"llévame a la tienda\"";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        modulo = await JS.InvokeAsync<IJSObjectReference>("import", "./js/asistenteVoz.js");
+        soportado = await modulo.InvokeAsync<bool>("esSoportado");
+        StateHasChanged();
+    }
+
+    private async Task AlternarAsync()
+    {
+        if (modulo is null) return;
+
+        if (!soportado)
+        {
+            Mostrar("Tu navegador no soporta reconocimiento de voz. Probá con Chrome o Edge.", error: true);
+            return;
+        }
+
+        if (escuchando)
+        {
+            await modulo.InvokeVoidAsync("detener");
+            escuchando = false;
+            Mostrar("Asistente en pausa.");
+            return;
+        }
+
+        referencia ??= DotNetObjectReference.Create(this);
+        escuchando = await modulo.InvokeAsync<bool>("iniciar", referencia, Idioma);
+        transcripcion = null;
+        if (escuchando)
+            Mostrar("Te escucho… probá \"llévame a la tienda\" o \"muéstrame comida para perro\".", autoOcultar: false);
+        else
+            Mostrar("No se pudo activar el micrófono.", error: true);
+    }
+
+    [JSInvokable]
+    public void OnParcialJs(string texto)
+    {
+        transcripcion = texto;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task OnComandoJs(string texto)
+    {
+        transcripcion = texto;
+        var estado = await AuthStateProvider.GetAuthenticationStateAsync();
+        var rol = estado.User.Identity?.IsAuthenticated == true
+            ? estado.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+            : null;
+
+        var comando = ComandosVoz.Interpretar(texto, rol);
+        switch (comando.Tipo)
+        {
+            case TipoComandoVoz.Navegar:
+                Navigation.NavigateTo(comando.Ruta!);
+                break;
+            case TipoComandoVoz.Buscar:
+                // La Tienda lee ?q= y lo aplica al buscador existente, tanto si venimos de otra
+                // página como si ya estamos en /tienda.
+                Navigation.NavigateTo($"tienda?q={Uri.EscapeDataString(comando.Busqueda!)}");
+                break;
+            case TipoComandoVoz.Detener:
+                if (modulo is not null) await modulo.InvokeVoidAsync("detener");
+                escuchando = false;
+                break;
+        }
+
+        var esFallo = comando.Tipo is TipoComandoVoz.NoEntendido or TipoComandoVoz.NoPermitido;
+        Mostrar(comando.Mensaje, error: esFallo);
+    }
+
+    [JSInvokable]
+    public void OnErrorJs(string codigo)
+    {
+        var fatal = codigo is "not-allowed" or "service-not-allowed" or "audio-capture" or "network" or "language-not-supported";
+        if (fatal) escuchando = false;
+
+        Mostrar(codigo switch
+        {
+            "not-allowed" or "service-not-allowed" => "Necesito permiso para usar el micrófono. Habilitalo en el candado de la barra de direcciones.",
+            "audio-capture" => "No encontré un micrófono conectado.",
+            // Chrome/Edge mandan el audio a su servicio de reconocimiento; este error es de ese
+            // servicio (o de un navegador sin él, como Brave), no de la conexión con nuestra API.
+            "network" => "El servicio de reconocimiento de voz del navegador no respondió. Revisá tu conexión o probá con Chrome.",
+            "language-not-supported" => "Tu navegador no reconoce voz en español.",
+            _ => "No entendí el comando, ¿podés repetirlo?",
+        }, error: true);
+    }
+
+    [JSInvokable]
+    public void OnFinalizadoJs()
+    {
+        escuchando = false;
+        StateHasChanged();
+    }
+
+    private void Mostrar(string? texto, bool error = false, bool autoOcultar = true)
+    {
+        mensaje = texto;
+        esError = error;
+        StateHasChanged();
+
+        ocultarCts?.Cancel();
+        if (!autoOcultar) return;
+
+        var cts = ocultarCts = new CancellationTokenSource();
+        _ = Task.Delay(TimeSpan.FromSeconds(5), cts.Token).ContinueWith(t =>
+        {
+            if (t.IsCanceled) return;
+            transcripcion = null;
+            mensaje = escuchando ? "Te escucho…" : null;
+            esError = false;
+            InvokeAsync(StateHasChanged);
+        }, TaskScheduler.Default);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        ocultarCts?.Cancel();
+        if (modulo is not null)
+        {
+            try
+            {
+                await modulo.InvokeVoidAsync("detener");
+                await modulo.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+        referencia?.Dispose();
+    }
+}

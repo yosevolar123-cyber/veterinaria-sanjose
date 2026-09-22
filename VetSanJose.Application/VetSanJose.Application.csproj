@@ -12,6 +12,12 @@
     <PackageReference Include="QuestPDF" Version="2026.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Tipografías del sitio (Inter / Baloo 2, licencia OFL) para el PDF: el contenedor Linux de
+         producción no las trae instaladas. -->
+    <EmbeddedResource Include="Reportes\Fuentes\*.ttf" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
