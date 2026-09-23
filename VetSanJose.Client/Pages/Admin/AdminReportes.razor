@@ -129,8 +129,7 @@ else
         <StatCard Icono="🩺" Valor="@reporte.TotalConsultas.ToString()" Etiqueta="Consultas registradas" />
     </div>
 
-    <div class="mb-8 grid gap-4 lg:grid-cols-2">
-        <GraficoBarras Titulo="Ingresos vs. costos por día" Etiquetas="etiquetas" Series="serieIngresosCostos" />
+    <div class="mb-8">
         <GraficoBarras Titulo="Clientes atendidos por día" Etiquetas="etiquetas" Series="serieClientes" />
     </div>
 
@@ -170,7 +169,6 @@ else
     private bool descargando;
 
     private List<string> etiquetas = [];
-    private List<GraficoBarras.SerieGrafico> serieIngresosCostos = [];
     private List<GraficoBarras.SerieGrafico> serieClientes = [];
 
     private ReporteNegocioMesDto? negocio;
@@ -229,11 +227,6 @@ else
         }
 
         etiquetas = reporte.Items.Select(i => i.Fecha.ToString("dd/MM")).ToList();
-        serieIngresosCostos =
-        [
-            new GraficoBarras.SerieGrafico("Ingresos", reporte.Items.Select(i => i.Ingresos).ToList(), "#38bdf8"),
-            new GraficoBarras.SerieGrafico("Costos", reporte.Items.Select(i => i.Costos).ToList(), "#ef4444"),
-        ];
         serieClientes =
         [
             new GraficoBarras.SerieGrafico("Clientes atendidos", reporte.Items.Select(i => (decimal)i.ClientesAtendidos).ToList(), "#22c55e"),
