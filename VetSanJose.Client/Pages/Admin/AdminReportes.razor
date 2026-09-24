@@ -129,10 +129,6 @@ else
         <StatCard Icono="🩺" Valor="@reporte.TotalConsultas.ToString()" Etiqueta="Consultas registradas" />
     </div>
 
-    <div class="mb-8">
-        <GraficoBarras Titulo="Clientes atendidos por día" Etiquetas="etiquetas" Series="serieClientes" />
-    </div>
-
     <div class="tarjeta overflow-hidden">
         <div class="max-h-96 overflow-y-auto">
             <table class="w-full text-left text-sm">
@@ -167,9 +163,6 @@ else
     private DateOnly? hasta;
     private string? error;
     private bool descargando;
-
-    private List<string> etiquetas = [];
-    private List<GraficoBarras.SerieGrafico> serieClientes = [];
 
     private ReporteNegocioMesDto? negocio;
     private string mesSeleccionado = DateTime.Now.ToString("yyyy-MM");
@@ -211,26 +204,11 @@ else
         try
         {
             reporte = await ReportesApiClient.GetFinancieroAsync(desde, hasta);
-            ConstruirSeries();
         }
         catch (HttpRequestException ex)
         {
             error = $"No se pudo cargar el reporte: {ex.Message}";
         }
-    }
-
-    private void ConstruirSeries()
-    {
-        if (reporte is null)
-        {
-            return;
-        }
-
-        etiquetas = reporte.Items.Select(i => i.Fecha.ToString("dd/MM")).ToList();
-        serieClientes =
-        [
-            new GraficoBarras.SerieGrafico("Clientes atendidos", reporte.Items.Select(i => (decimal)i.ClientesAtendidos).ToList(), "#22c55e"),
-        ];
     }
 
     private async Task DescargarPdfAsync()
