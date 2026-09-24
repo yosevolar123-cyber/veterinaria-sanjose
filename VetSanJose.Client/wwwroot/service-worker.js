@@ -1,7 +1,10 @@
 // Service worker de Veterinaria San José: cachea el app shell y usa
 // stale-while-revalidate para el resto de las peticiones same-origin,
 // dejando pasar sin tocar cualquier petición cross-origin (p. ej. la API).
-const CACHE_NAME = 'vetsanjose-cache-v2';
+// El navegador y el código de la app (index.html + _framework) van siempre
+// por red primero, para que un despliegue nuevo no quede atrapado en caché.
+const CACHE_VERSION = '__BUILD_VERSION__';
+const CACHE_NAME = `vetsanjose-cache-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   './',
   'index.html',
@@ -29,6 +32,32 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function guardar(request, response) {
+  if (response && response.status === 200) {
+    const clone = response.clone();
+    caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+  }
+  return response;
+}
+
+// Red primero: si hay conexión siempre gana la versión recién desplegada.
+function redPrimero(request) {
+  return fetch(request)
+    .then((response) => guardar(request, response))
+    .catch(() => caches.match(request).then((cached) => cached || caches.match('index.html')));
+}
+
+// Stale-while-revalidate: responde al instante y refresca en segundo plano.
+function cacheConRefresco(request) {
+  return caches.match(request).then((cached) => {
+    const network = fetch(request)
+      .then((response) => guardar(request, response))
+      .catch(() => cached);
+
+    return cached || network;
+  });
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
 
@@ -41,19 +70,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
+  const esNavegacion = request.mode === 'navigate';
+  const esCodigoDeApp = url.pathname.includes('/_framework/') || url.pathname.endsWith('service-worker.js');
 
-      return cached || network;
-    })
-  );
+  event.respondWith(esNavegacion || esCodigoDeApp ? redPrimero(request) : cacheConRefresco(request));
 });

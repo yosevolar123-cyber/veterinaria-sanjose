@@ -37,6 +37,10 @@ jobs:
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           sed -i "s|<base href=\"/\" />|<base href=\"/${REPO_NAME}/\" />|g" output/wwwroot/index.html
 
+      - name: Stamp service worker cache version
+        run: |
+          sed -i "s|__BUILD_VERSION__|${GITHUB_SHA}|g" output/wwwroot/service-worker.js
+
       - name: Ensure 404.html exists for SPA routing
         run: |
           if [ ! -f output/wwwroot/404.html ]; then
