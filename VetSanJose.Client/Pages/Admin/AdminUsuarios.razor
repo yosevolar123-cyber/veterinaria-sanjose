@@ -4,8 +4,8 @@
 @inject IJSRuntime JsRuntime
 
 <div>
-    <div class="mb-4 flex items-center justify-between">
-        <select class="campo-brutal-sm" @bind="filtroRol" @bind:after="CargarAsync">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <select class="campo-brutal-sm w-auto" @bind="filtroRol" @bind:after="CargarAsync">
             <option value="">Todos los roles</option>
             <option value="@Roles.Cliente">Cliente</option>
             <option value="@Roles.Doctor">Doctor</option>
@@ -26,8 +26,8 @@
     }
     else
     {
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
+        <div class="tabla-scroll">
+            <table class="w-full min-w-[44rem] text-left text-sm">
                 <thead>
                     <tr class="border-b border-[var(--color-gris-borde)] text-gray-500">
                         <th class="py-2">Nombre</th>
@@ -59,8 +59,8 @@
                                 </span>
                             </td>
                             <td class="py-2 text-right">
-                                <button class="text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(usuario)">Editar</button>
-                                <button class="ml-3 hover:underline @(usuario.Activo ? "text-[var(--color-error)]" : "text-[var(--color-exito)]")"
+                                <button class="inline-flex min-h-11 items-center text-[var(--color-celeste-intenso)] hover:underline" @onclick="() => AbrirEditar(usuario)">Editar</button>
+                                <button class="ml-3 inline-flex min-h-11 items-center hover:underline @(usuario.Activo ? "text-[var(--color-error)]" : "text-[var(--color-exito)]")"
                                         disabled="@(procesandoId == usuario.Id)"
                                         @onclick="() => CambiarEstadoAsync(usuario)">
                                     @(usuario.Activo ? "Desactivar" : "Reactivar")
@@ -80,7 +80,7 @@
         <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-[var(--color-error)]">@error</p>
     }
     <div class="space-y-3">
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input class="campo-brutal" placeholder="Nombre" @bind="form.Nombre" @bind:event="oninput" pattern="[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+" title="Solo letras" />
             <input class="campo-brutal" placeholder="Apellido" @bind="form.Apellido" @bind:event="oninput" pattern="[A-Za-zÁÉÍÓÚÑÜáéíóúñü\s'-]+" title="Solo letras" />
         </div>
@@ -99,7 +99,7 @@
 
         @if (form.Rol == Roles.Doctor)
         {
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input class="campo-brutal" placeholder="Especialidad" @bind="form.Especialidad" />
                 <input class="campo-brutal" placeholder="Matrícula" @bind="form.Matricula" @bind:event="oninput"
                        pattern="[0-9]+" title="Solo números" />

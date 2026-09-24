@@ -93,6 +93,39 @@
     box-shadow: 3px 3px 0 0 var(--color-tinta);
   }
 
+  /* Carril horizontal para barras de pestanas y chips: en movil desplazan
+     dentro de su propio contenedor en vez de romper el layout de la pagina. */
+  .carril-scroll {
+    @apply flex overflow-x-auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .carril-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .carril-scroll > * {
+    @apply shrink-0 whitespace-nowrap;
+  }
+
+  /* Contenedor de tablas anchas: el scroll lateral queda dentro de la tarjeta,
+     nunca en la pagina entera. */
+  .tabla-scroll {
+    @apply w-full overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Boton de cierre de los modales: area tactil de 44px aunque el glifo sea chico. */
+  .btn-cerrar {
+    @apply -mr-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg
+           text-lg leading-none text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600;
+  }
+
+  /* Cabecera fija de los modales: el titulo y la X siguen visibles al desplazar. */
+  .modal-cabecera {
+    @apply sticky top-0 z-10 -mx-6 -mt-6 mb-4 flex items-center justify-between gap-3
+           rounded-t-[var(--radius-card)] border-b-2 border-[var(--color-tinta)] bg-white px-6 py-3;
+  }
+
   .separador-huella::before {
     content: "🐾";
     @apply mr-2 opacity-60;
@@ -182,6 +215,21 @@
 
   .fondo-huellas {
     animation: none;
+  }
+}
+
+/* En pantallas tactiles ningun control interactivo baja de 44px de alto,
+   aunque una clase puntual le recorte el padding. */
+@media (pointer: coarse) {
+  .btn-primario,
+  .btn-secundario,
+  .campo-brutal,
+  .campo-brutal-sm,
+  select,
+  input[type="date"],
+  input[type="month"],
+  input[type="time"] {
+    min-height: 2.75rem;
   }
 }
 

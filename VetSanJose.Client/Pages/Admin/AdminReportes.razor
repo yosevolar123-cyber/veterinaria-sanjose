@@ -69,8 +69,8 @@
 
         @if (negocio.TopProductos.Count > 0)
         {
-            <div class="tarjeta mt-4 overflow-hidden">
-                <table class="w-full text-left text-sm">
+            <div class="tarjeta mt-4 tabla-scroll">
+                <table class="w-full min-w-[30rem] text-left text-sm">
                     <thead>
                         <tr class="border-b border-[var(--color-gris-borde)] text-gray-500">
                             <th class="px-4 py-3">Producto</th>
@@ -130,8 +130,8 @@ else
     </div>
 
     <div class="tarjeta overflow-hidden">
-        <div class="max-h-96 overflow-y-auto">
-            <table class="w-full text-left text-sm">
+        <div class="max-h-96 overflow-auto">
+            <table class="w-full min-w-[38rem] text-left text-sm">
                 <thead class="sticky top-0 bg-white">
                     <tr class="border-b border-[var(--color-gris-borde)] text-gray-500">
                         <th class="px-4 py-3">Fecha</th>

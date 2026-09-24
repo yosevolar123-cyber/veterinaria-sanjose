@@ -7,15 +7,15 @@
 
 @if (Visible)
 {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 fade-in-up" @onclick="Cerrar">
-        <div class="tarjeta w-full max-w-md p-6" @onclick:stopPropagation="true">
-            <div class="mb-4 flex items-center justify-between">
-                <h2 class="text-xl">¡Bienvenido de vuelta! 🐾</h2>
-                <button class="text-gray-400 hover:text-gray-600" @onclick="Cerrar">✕</button>
+    <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 px-4 py-6 fade-in-up sm:items-center" @onclick="Cerrar">
+        <div class="tarjeta my-auto max-h-[calc(100dvh-3rem)] w-full max-w-md overflow-y-auto p-6" @onclick:stopPropagation="true">
+            <div class="modal-cabecera">
+                <h2 class="text-lg sm:text-xl">¡Bienvenido de vuelta! 🐾</h2>
+                <button class="btn-cerrar" aria-label="Cerrar" @onclick="Cerrar">✕</button>
             </div>
 
             <div class="mb-4 flex gap-2 rounded-full bg-[var(--color-celeste-suave)] p-1">
-                <button class="flex-1 rounded-full py-2 text-sm font-semibold transition-colors @(tab == Tab.Login ? "bg-white shadow text-[var(--color-celeste-intenso)]" : "text-gray-500")"
+                <button class="min-h-11 flex-1 rounded-full py-2 text-sm font-semibold transition-colors @(tab == Tab.Login ? "bg-white shadow text-[var(--color-celeste-intenso)]" : "text-gray-500")"
                         @onclick="() => tab = Tab.Login">
                     Iniciar sesión
                 </button>
@@ -56,7 +56,7 @@
                 <EditForm Model="registroModel" OnValidSubmit="EnviarRegistroAsync">
                     <DataAnnotationsValidator />
                     <div class="space-y-3">
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
                                 <input class="campo-brutal w-full"
                                        placeholder="Nombre" @bind="registroModel.Nombre" />

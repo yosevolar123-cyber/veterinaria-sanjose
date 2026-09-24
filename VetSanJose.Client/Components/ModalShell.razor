@@ -1,10 +1,10 @@
 @if (Visible)
 {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4" @onclick="Cerrar">
-        <div class="tarjeta max-h-[90vh] w-full @AnchoClase overflow-y-auto p-6" @onclick:stopPropagation="true">
-            <div class="mb-4 flex items-center justify-between">
-                <h2 class="text-xl">@Titulo</h2>
-                <button class="text-gray-400 hover:text-gray-600" @onclick="Cerrar">✕</button>
+    <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 px-4 py-6 sm:items-center" @onclick="Cerrar">
+        <div class="tarjeta my-auto max-h-[calc(100dvh-3rem)] w-full @AnchoClase overflow-y-auto p-6" @onclick:stopPropagation="true">
+            <div class="modal-cabecera">
+                <h2 class="truncate text-lg sm:text-xl">@Titulo</h2>
+                <button class="btn-cerrar" aria-label="Cerrar" @onclick="Cerrar">✕</button>
             </div>
             @ChildContent
         </div>
