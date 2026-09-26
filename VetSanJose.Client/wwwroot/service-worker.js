@@ -13,15 +13,25 @@ const PRECACHE_URLS = [
   'css/tailwind.css',
   'favicon.png',
   'icon-192.png',
+  'icon-512.png',
+  'icon-512-maskable.png',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
       .catch(() => {})
   );
+});
+
+// Espera a que la pagina pida explicitamente activar la version nueva
+// (boton "Recargar" del aviso de actualizacion) en vez de reemplazar el
+// service worker en uso sin avisar.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {
