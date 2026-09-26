@@ -122,16 +122,32 @@
             window.navigator.standalone === true;
     }
 
+    // Mismo esquema de posición que el botón flotante del asistente de voz
+    // (AsistenteVoz.razor), pero en la esquina inferior IZQUIERDA para no
+    // superponerse: mismo padding al borde y mismo margen sobre el BottomNav
+    // móvil (5rem) + safe-area-inset-bottom para iOS.
+    function inyectarEstilosInstalar() {
+        if (document.getElementById('pwa-install-btn-style')) return;
+        var style = document.createElement('style');
+        style.id = 'pwa-install-btn-style';
+        style.textContent =
+            '#pwa-install-btn{position:fixed;left:12px;' +
+            'bottom:calc(5rem + env(safe-area-inset-bottom));z-index:9998;' +
+            'border:3px solid #0f172a;border-radius:10px;padding:10px 16px;' +
+            'font:700 14px system-ui,sans-serif;background:#38bdf8;color:#0f172a;' +
+            'cursor:pointer;box-shadow:4px 4px 0 0 #0f172a;}' +
+            '@media (min-width:640px){#pwa-install-btn{left:24px;bottom:24px;}}';
+        document.head.appendChild(style);
+    }
+
     function mostrarBotonInstalar() {
         if (estaInstalada() || document.getElementById('pwa-install-btn')) return;
+
+        inyectarEstilosInstalar();
 
         var btn = document.createElement('button');
         btn.id = 'pwa-install-btn';
         btn.textContent = '⬇ Instalar app';
-        btn.style.cssText =
-            'position:fixed;right:16px;bottom:16px;z-index:9998;border:3px solid #0f172a;' +
-            'border-radius:10px;padding:10px 16px;font:700 14px system-ui,sans-serif;' +
-            'background:#38bdf8;color:#0f172a;cursor:pointer;box-shadow:4px 4px 0 0 #0f172a;';
         btn.addEventListener('click', function () {
             btn.remove();
             if (!deferredPrompt) return;
